@@ -244,16 +244,24 @@ export class CalendarView {
                 if(this.dragMode === "resize" && targetTask && this.dragEdge){
                     // 기존 일정 기간 변경
                     let validDate = dayDate.clone();
-                    if(this.dragEdge === "start" && targetTask.endDate){
+                    if(this.dragEdge === "start"){
                         if(validDate.isAfter(targetTask.endDate, "day")){
-                            validDate = targetTask.endDate.clone();
+                            // 종료일보다 뒤로이동, 종료일 <-> 시작일 스왑
+                            targetTask.startDate = this.oldEnd!.clone();
+                            targetTask.endDate = validDate;
+                        } else {
+                            targetTask.startDate = validDate;
+                            targetTask.endDate = this.oldEnd!.clone();
                         }
-                        targetTask.startDate = validDate;
                     } else if(this.dragEdge === "end" && targetTask.startDate){
                         if(validDate.isBefore(targetTask.startDate, "day")){
-                            validDate = targetTask.startDate.clone();
+                            // 시작일보다 앞으로 이동, 시작일 <-> 종료일 스왑
+                            targetTask.endDate = this.oldStart!.clone();
+                            targetTask.startDate = validDate;
+                        } else {
+                            targetTask.endDate = validDate;
+                            targetTask.startDate = this.oldStart!.clone();
                         }
-                        targetTask.endDate = validDate;
                     }
                     this.clearHighlight("period-highlighted-clicked")
                     if(targetTask.startDate && targetTask.endDate){
