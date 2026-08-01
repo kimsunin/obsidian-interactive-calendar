@@ -1,0 +1,284 @@
+import { App, TFile, moment } from "obsidian";
+import {
+    getAllDailyNotes,
+    getDateFromFile,
+    getDailyNote,
+    createDailyNote
+} from "obsidian-daily-notes-interface";
+import { TaskParser } from "./TaskParser";
+import { Task } from "src/types";
+
+export class DailyNoteService {
+    private app: App;
+    private taskParser: TaskParser;
+
+    constructor(app: App){
+        this.app = app;
+        this.taskParser = new TaskParser();
+    }
+
+    // 특정 달의 daily 노트를 읽고 파싱해서 task 배열로 반환
+    public async getAllTasks(): Promise<Map<string, Task[]>> {
+
+        const dailyNotes: Record<string, TFile> = getAllDailyNotes();
+        const tagMap = new Map<string, Task>();
+
+        // Map을 통해 같은 tag에 속하는 일정들의 minDate, maxDate 갱신
+        for (const file of Object.values(dailyNotes)){
+            const noteDate = getDateFromFile(file, "day");
+            if(!noteDate) continue;
+
+            const content = await this.app.vault.read(file);
+            const tasks = this.taskParser.parse(content, file.path);
+
+            for (const task of tasks){
+                task.date = noteDate.clone();
+                if (task.level === 0 && task.tag) {
+                    if (!tagMap.has(task.tag)) {
+                        task.startDate = noteDate.clone();
+                        task.endDate = noteDate.clone();
+                        for(const child of task.children){
+                            child.date = noteDate.clone();
+                        }
+                        tagMap.set(task.tag, task);
+                    } else {
+                        const bounds = tagMap.get(task.tag)!;
+                        if (noteDate.isBefore(bounds.startDate!)) bounds.startDate = noteDate.clone();
+                        if (noteDate.isAfter(bounds.endDate!)) bounds.endDate = noteDate.clone();
+
+                        for(const child of task.children){
+                            child.date = noteDate.clone();
+                            bounds.children.push(child);
+                        }
+                    }
+                } 
+            }
+        }
+
+        // 원별 그룹화
+        const monthMap = new Map<string, Task[]>();
+        for(const task of tagMap.values()){
+            if(!task.startDate || !task.endDate) continue;
+
+            const curr = task.startDate.clone().startOf("month");
+            const endMonth = task.endDate.clone().startOf("month");
+
+            while(curr.isSameOrBefore(endMonth, "month")){
+                const key = curr.format("YYYY-MM");
+                const list = monthMap.get(key) || []
+                list.push(task);
+                monthMap.set(key, list);
+                curr.add(1, "month");
+            }
+        }
+
+        return monthMap
+    }
+
+    // 데일리 노트 읽어오기 함수
+    public async getOrCreateDailyNote(date: moment.Moment): Promise<TFile>{
+        const dailyNotes = getAllDailyNotes();
+        let file = getDailyNote(date, dailyNotes);
+        if(!file){
+            file = await createDailyNote(date);
+        }
+        return file;
+    }
+        
+
+    // 날짝 클릭시 해당 날짜의 데일리 노트를 오픈, 없는 경우 생성
+    public async openOrCreateDailyNote(date: moment.Moment): Promise<void> {
+        const file = await this.getOrCreateDailyNote(date);
+        const leaf = this.app.workspace.getLeaf(false);
+        await leaf.openFile(file, {active: true});
+    }
+
+    // 일정 상태변경
+    public async toggleTaskState(task: Task): Promise<void> {
+        // 상위 일정 -> 기간 내에 속한 모든 데일리 노트에 반영
+        if(task.level ===0 && task.tag && task.startDate && task.endDate){
+            const dailyNotes = getAllDailyNotes();
+            const tagKeyword = `#${task.tag}`;
+
+            for (const file of Object.values(dailyNotes)){
+                const noteDate = getDateFromFile(file, "day");
+                
+                if(!noteDate || !noteDate.isBetween(task.startDate, task.endDate, "day", "[]")) continue;
+                
+                const content = await this.app.vault.read(file);
+                const lines = content.split("\n");
+
+                for (let i = 0; i < lines.length; i ++){
+                    const line = lines[i];
+
+                    if(line.includes(tagKeyword)){
+                        if(task.completed){
+                            lines[i] = line.replace(/^(\s*[-*+]\s+\[)[ ](\])/, "$1x$2");    
+                        } else {
+                            lines[i] = line.replace(/^(\s*[-*+]\s+\[)[xX](\])/, "$1 $2");
+                        }
+                        break;
+                    }
+                }
+                await this.app.vault.modify(file, lines.join("\n"));
+            }
+        }
+        // 하위 일정 -> 해당 날짜의 데일리 노트에만 반영
+        else {
+            const file = this.app.vault.getAbstractFileByPath(task.filePath);
+            if(!(file instanceof TFile)) return;
+
+            const content = await this.app.vault.read(file);
+            const lines = content.split("\n");
+
+            const lineIndex = task.lineNumber - 1;
+            if(lineIndex < 0 || lineIndex >= lines.length) return;
+
+            const targetLine = lines[lineIndex];
+
+            let updatedLine = targetLine;
+            if(task.completed){
+                updatedLine = targetLine.replace(/^(\s*[-*+]\s+\[)[ ](\])/, "$1x$2");
+            } else {
+                updatedLine = targetLine.replace(/^(\s*[-*+]\s+\[)[xX](\])/, "$1 $2");
+            }
+
+            lines[lineIndex] = updatedLine;
+            await this.app.vault.modify(file, lines.join("\n"));
+        }
+    }
+
+    // 일정 업데이트(하위 일정 추가, 제거)
+    public async updateTask(rootTask: Task, targetDate?: moment.Moment): Promise<void> {
+        const fileDate = targetDate || rootTask.date || moment();
+        const file = await this.getOrCreateDailyNote(fileDate);
+
+        const content = await this.app.vault.read(file);
+        const lines = content.split("\n");
+
+        const startLineIndex = rootTask.lineNumber - 1;
+        if(startLineIndex < 0 || startLineIndex >= lines.length) return;
+
+        const endLineIndex = this.getMaxChildLine(rootTask, fileDate) - 1;
+
+        const newBlockContent = this.taskParser.stringify(rootTask, fileDate);
+        const newBlockLines = newBlockContent.split("\n");
+
+        const deleteCount = endLineIndex - startLineIndex + 1;
+        lines.splice(startLineIndex, deleteCount, ...newBlockLines);
+
+        await this.app.vault.modify(file, lines.join("\n"));
+    }
+
+    // 일정 추가(상위 일정 추가)
+    public async addTask(task: Task): Promise<void> {
+        const targetDate = task.date || moment();
+        
+        const file = await this.getOrCreateDailyNote(targetDate);
+
+        const content = await this.app.vault.read(file);
+        const lines = content.split("\n");
+        const existingTasks = this.taskParser.parse(content, file.path);
+
+        const newTaskContent = this.taskParser.stringify(task, targetDate);
+
+        if(existingTasks.length > 0){
+            const maxLineNumber = Math.max(...existingTasks.map(t => t.lineNumber));
+            lines.splice(maxLineNumber, 0, newTaskContent);
+        } else {
+            lines.push(newTaskContent);
+        }
+
+        await this.app.vault.modify(file, lines.join("\n"));
+    }
+
+    // 일정 삭제(상위 일정 제거)
+    public async removeTask(task: Task, targetDate?: moment.Moment): Promise<void> {
+        const fileDate = targetDate || task.date || moment();
+        const dailyNotes = getAllDailyNotes();
+        const file = getDailyNote(fileDate, dailyNotes);
+        if (!file) return;
+
+        const content = await this.app.vault.read(file);
+        const tagKeyword = task.tag ? `#${task.tag}` : null;
+
+        if (tagKeyword && !content.includes(tagKeyword)) return;
+
+        const lines = content.split("\n");
+        const parsedTasks = this.taskParser.parse(content, file.path);
+
+        const targetRootTask = tagKeyword ? parsedTasks.find(t => t.level === 0 && t.tag === task.tag)
+                : parsedTasks.find(t => t.lineNumber === task.lineNumber);
+
+        if(targetRootTask){
+            const startLineIndex = targetRootTask.lineNumber - 1;
+            const endLineIndex = this.getMaxChildLine(targetRootTask, fileDate) - 1;
+
+            const deleteCount = endLineIndex - startLineIndex + 1;
+            lines.splice(startLineIndex, deleteCount);
+
+            await this.app.vault.modify(file, lines.join("\n"));
+        }
+    }
+
+    // 기간 일정 수정
+    public async updateTaskPeriod(
+        task: Task,
+        oldStart: moment.Moment,
+        oldEnd: moment.Moment,
+        newStart: moment.Moment,
+        newEnd: moment.Moment
+    ): Promise<void>{
+        if(!task.tag) return;
+
+        if(oldStart.isSame(newStart, "day") && oldEnd.isSame(newEnd, "day")) return;
+
+        const tagKeyword = `#${task.tag}`;
+
+        const oldDates = new Set<string>();
+        const currOld = oldStart.clone();
+        while(currOld.isSameOrBefore(oldEnd, "day")){
+            oldDates.add(currOld.format("YYYY-MM-DD"));
+            currOld.add(1, "day");
+        }
+
+        const newDates = new Set<string>();
+        const currNew = newStart.clone();
+        while(currNew.isSameOrBefore(newEnd, "day")){
+            newDates.add(currNew.format("YYYY-MM-DD"));
+            currNew.add(1, "day");
+        }
+
+        // 삭제
+        for (const dateStr of oldDates){
+            if(!newDates.has(dateStr)){
+                const remvoedDate = moment(dateStr, "YYYY-MM-DD");
+                await this.removeTask(task, remvoedDate);
+            }
+        }
+        
+        // 추가
+        for (const dateStr of newDates){
+            if(!oldDates.has(dateStr)){
+                const addedDate = moment(dateStr, "YYYY-MM-DD");
+                const tempTask: Task = {
+                    ...task,
+                    date: addedDate.clone(),
+                    level: 0
+                }
+                await this.addTask(tempTask);
+            }
+        }
+    }
+
+    private getMaxChildLine(task: Task, fileDate: moment.Moment): number {
+        let max = task.lineNumber;
+        if (task.children && task.children.length > 0) {
+            const matchingChildren = task.children.filter(c => c.date && c.date.isSame(fileDate, "day"));
+            for (const child of matchingChildren) {
+                max = Math.max(max, this.getMaxChildLine(child, fileDate));
+            }
+        }
+        return max;
+    }
+}

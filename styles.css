@@ -1,0 +1,308 @@
+/* 캘린더 전체 뷰 레이아웃 (사이드바 컴팩트 스타일) */
+.interactive-calendar-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    font-family: var(--font-interface);
+    background-color: var(--background-secondary); /* 옵시디언 사이드바 배경색 */
+}
+
+.interactive-calendar-top {
+    margin-bottom: 12px;
+}
+
+/* 1. 헤더 영역 (.calendar-view-header) */
+.calendar-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 0 4px;
+}
+
+/* 연도-월 타이틀 (.calendar-header-title) */
+.calendar-header-title {
+    font-weight: 750;
+    font-size: 1.45em;
+    color: var(--text-normal);
+    letter-spacing: -0.02em;
+}
+
+/* < today > 컨트롤 묶음 (.calendar-header-controls) */
+.calendar-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+}
+
+/* 컨트롤러 버튼들 */
+.calendar-header-controls-prev,
+.calendar-header-controls-next,
+.calendar-header-controls-today,
+.calendar-header-controls-refresh {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85em;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: color 0.15s ease;
+}
+
+.calendar-header-controls-prev:hover,
+.calendar-header-controls-next:hover,
+.calendar-header-controls-today:hover,
+.calendar-header-controls-refresh:hover {
+    background-color: transparent !important;
+    transform: none !important;
+    color: var(--text-normal);
+}
+
+.calendar-header-controls-prev svg,
+.calendar-header-controls-next svg,
+.calendar-header-controls-refresh svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.2px;
+}
+
+.calendar-header-controls-today {
+    font-weight: 600;
+}
+
+
+/* 2. 요일 표시줄 (.calendar-view-weekdays) */
+.calendar-view-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.7em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    opacity: 0.8;
+}
+
+.calendar-view-weekday {
+    padding: 4px 0;
+}
+
+/* 3. 날짜 그리드 영역 (.calendar-view-grid) */
+.calendar-view-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr)); /* 셀 크기 넘침 방지 */
+    gap: 3px;
+    width: 100%;
+}
+
+/* 날짜 셀 (.calendar-day-cell) */
+.calendar-day-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;     /* 점 박스를 세로 중앙 정렬 */
+    justify-content: center; /* 점 박스를 가로 중앙 정렬 */
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;     /* 날짜 숫자의 절대 위치 기준점 */
+    background-color: var(--background-primary);
+    transition: background-color 0.15s ease, color 0.15s ease;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.calendar-day-cell:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+/* 호버된 일정 기간 옵시디언 기본 보라색 강조 (.period-highlighted) */
+.calendar-day-cell.period-highlighted-clicked,
+.calendar-day-cell.period-highlighted {
+    background-color: var(--interactive-accent, #8b5cf6) !important;
+}
+
+.calendar-day-cell.period-highlighted-clicked .day-number,
+.calendar-day-cell.period-highlighted .day-number {
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+/* 이전/다음 달 날짜 (.other-month) */
+.calendar-day-cell.other-month {
+    opacity: 0.25;
+}
+
+/* 오늘 날짜 (.is-today) */
+.calendar-day-cell.is-today .day-number {
+    font-weight: 700;
+    color: #a855f7; /* 보라색 수치 강조 */
+}
+
+/* 날짜 숫자 (.day-number) - 우측 상단 고정 및 호버 효과 */
+.day-number {
+    font-size: 0.72em;
+    color: var(--text-normal);
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    line-height: 1;
+    z-index: 1;
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.day-number:hover {
+    color: var(--text-accent) !important;
+    text-decoration: underline;
+}
+
+/* 4. 일정 점(Dot) 컨테이너 (그리드 4열 78% 너비 정밀 대칭) */
+.task-dots-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px 6%;
+    justify-items: center;
+    align-items: center;
+    width: 78%;
+    margin: 0 auto;
+    max-height: 48%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* 점(Dot) 기본 스타일 (또렷한 톤) */
+.task-dot {
+    width: 75%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    box-sizing: border-box;
+    pointer-events: auto;
+    transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+/* 완료된 일정: 조금 더 진하게 채워진 점 (Vivid Filled Dot) */
+.task-dot.is-completed {
+    background-color: var(--text-muted);
+    border: none;
+    opacity: 0.8;
+}
+
+/* 완료되지 않은 일정: 또렷한 선명의 테두리 링 점 (Vivid Hollow Dot) */
+.task-dot.is-incomplete {
+    background-color: transparent;
+    border: 1.2px solid var(--text-normal);
+    opacity: 1.0;
+}
+
+
+
+
+/* ==========================================================================
+   5. 하단 영역 (TaskView 스타일)
+   ========================================================================== */
+
+.interactive-calendar-bottom {
+    flex: 1;
+    overflow-y: auto;
+    border-top: 1px solid var(--background-modifier-border);
+    padding-top: 12px;
+    margin-top: 8px;
+}
+
+/* TaskView 헤더 */
+.task-view-header {
+    margin-bottom: 10px;
+}
+
+.task-view-title {
+    margin: 0;
+    font-size: 0.95em;
+    font-weight: 650;
+    color: var(--text-normal);
+}
+
+.task-view-title.focused {
+    color: var(--text-accent);
+}
+
+/* Task 리스트 & 빈 상태 */
+.task-view-empty {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 8px 0;
+}
+
+.task-view-list, .task-children {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.task-children {
+    padding-left: 16px; /* 자식 항목 들여쓰기 */
+    border-left: 1px dashed var(--background-modifier-border-hover);
+    margin-left: 6px;
+    margin-top: 4px;
+}
+
+.task-view-list-item {
+    margin-bottom: 6px;
+}
+
+.task-view-list-item-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.88em;
+}
+
+.task-checkbox {
+    cursor: pointer;
+    accent-color: var(--interactive-accent);
+}
+
+.task-text {
+    color: var(--text-normal);
+    line-height: 1.3;
+}
+
+.task-text.is-completed,
+.task-text.is-comleted {
+    text-decoration: line-through;
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+/* ==========================================================================
+   6. 일정 추가 버튼 (+) span 투명 & 우측 정렬 스타일
+   ========================================================================== */
+
+.task-add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 4px;
+    margin-left: auto; /* flex 박스 내에서 우측 끝으로 정렬 */
+    user-select: none;
+    border-radius: 4px;
+    transition: color 0.15s ease;
+}
+
+.task-add-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.2px;
+}
+
+.task-add-btn:hover {
+    color: var(--text-normal);
+}

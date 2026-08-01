@@ -1,0 +1,10 @@
+{
+    "id": "interactive-calendar",
+    "name": "Interactive Calendar",
+    "version": "1.0.0",
+    "minAppVersion": "1.0.0",
+    "description": "Interactive Calendar plugin for Obsidian",
+    "author": "kimsuin",
+    "authorUrl": "https://github.com/kimsunin",
+    "isDesktopOnly": false
+}

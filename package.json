@@ -1,0 +1,28 @@
+{
+    "name": "interactive-calendar",
+    "version": "1.0.0",
+    "description": "Interactive Calendar plugin for Obsidian",
+    "main": "main.js",
+    "scripts": {
+        "dev": "node esbuild.config.mjs",
+        "build": "node esbuild.config.mjs production"
+    },
+    "keywords": [
+        "interactive",
+        "calendar",
+        "plugin"
+    ],
+    "author": "kimsuin",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^18.11.9",
+        "builtin-modules": "^3.3.0",
+        "esbuild": "0.17.3",
+        "obsidian": "latest",
+        "tslib": "^2.4.1",
+        "typescript": "4.9.3"
+    },
+    "dependencies": {
+        "obsidian-daily-notes-interface": "^0.9.4"
+    }
+}

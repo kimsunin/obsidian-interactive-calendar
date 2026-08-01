@@ -1,0 +1,17 @@
+# 노드 모듈
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 빌드 파일들
+build/
+main.js
+
+# os 찌끄레기
+.DS_Store
+Thumbs.db
+
+# 에디터 찌끄레기
+.vscode/
+.idea/
