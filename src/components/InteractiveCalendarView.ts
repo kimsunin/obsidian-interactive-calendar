@@ -131,12 +131,8 @@ export class InteractiveCalendarView extends ItemView {
                 selectedDate: this.selectedDate,
                 selectedTag: this.selectedTag,
                 tasksMap: this.monthTaskCache,   
-                ontaskToggle: async (task: Task) => {
+                onTaskToggle: async (task: Task) => {
                     await this.dailyNoteService.toggleTaskState(task);
-                    this.updateView();
-                },
-                onTaskUpdate: async (rootTask: Task, targetDate: moment.Moment) => {
-                    await this.dailyNoteService.updateTask(rootTask, targetDate);
                     this.updateView();
                 }
             })

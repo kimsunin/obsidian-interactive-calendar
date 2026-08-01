@@ -26,8 +26,7 @@ export interface TaskViewProps {
     selectedDate: moment.Moment;
     selectedTag: string | null;
     tasksMap: Map<string, Task[]>;
-    ontaskToggle: (task: Task) => void; // 체크박스 토글 콜백
-    onTaskUpdate: (parentTask: Task, targetDate: moment.Moment) => void; // 하위 일정 추가 콜백
+    onTaskToggle: (task: Task) => void; // 체크박스 토글 콜백
 }
 
 // task 데이터

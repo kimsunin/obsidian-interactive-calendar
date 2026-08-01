@@ -1,6 +1,5 @@
 import { App, setIcon, displayTooltip, moment } from "obsidian";
 import { Task, TaskViewProps } from "src/types";
-import { TaskCreateModal } from "./TaskCreateModal";
 
 
 export class TaskView {
@@ -102,8 +101,8 @@ export class TaskView {
         
         checkboxEl.addEventListener("click", () => {
             task.completed = checkboxEl.checked;
-            if(props.ontaskToggle){
-                props.ontaskToggle(task);
+            if (props.onTaskToggle) {
+                props.onTaskToggle(task);
             }
         });
 
@@ -111,38 +110,6 @@ export class TaskView {
             cls: `task-text ${task.completed ? "is-completed" : ""}`,
             text: task.text
         });
-
-        const addBtn = itemContentEl.createEl("span", {
-            cls: "task-add-btn child-add-btn"
-        });
-        setIcon(addBtn, "plus");
-
-        addBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            
-            const targetDate = task.date || props.selectedDate;
-            const childTempTask: Task = {
-                id: `temp-child-${Date.now()}`,
-                text: "",
-                date: targetDate.clone(),
-                completed: false,
-                level: task.level + 1,
-                children: [],
-                filePath: task.filePath,
-                lineNumber: 0,
-                rawText: ""
-            };
-
-            new TaskCreateModal(this.app, childTempTask, (newChildTask) => {
-                if(newChildTask && props.onTaskUpdate){
-                    task.children.push(newChildTask);
-                    const rootTask = this.findRootTask(task, props);
-                    if(rootTask){
-                        props.onTaskUpdate(rootTask, targetDate);
-                    }
-                }
-            }).open();
-        })
 
         if(task.children && task.children.length > 0){
             const childUl = liEl.createEl("ul", { 
@@ -152,32 +119,5 @@ export class TaskView {
                 this.renderTaskNode(childUl, childTask, props);
             });
         }
-    }
-
-    // 부모 찾기 헬퍼 함수
-    private findRootTask(target: Task, props: TaskViewProps) : Task | undefined {
-        if(target.level === 0) return target;
-
-        const monthKey = (target.date || props.selectedDate).format("YYYY-MM");
-        const monthTasks = props.tasksMap.get(monthKey) || [];
-
-        for (const root of monthTasks){
-            if(root.level ===0 && this.isChildOf(root, target)){
-                return root;
-            }
-        }
-        return undefined;
-    }
-
-    // 자식 포함 여부 헬퍼 함수
-    private isChildOf(parent: Task, target: Task) : boolean {
-        if(!parent.children || parent.children.length === 0) return false;
-
-        for (const child of parent.children){
-            if(child === target || child.id === target.id || this.isChildOf(child, target)){
-                return true;
-            }
-        }
-        return false;
     }
 }
