@@ -1,6 +1,6 @@
 # Obsidian Interactive Calendar
 
-<video src="./assets/interactive-calendar-default.mp4" controls width="100%"></video>
+![](interactive-calendar-default.mp4)
 
 >옵시디언에서 데일리 노트로 연속적인 일정을 관리할 수는 없을까?
 
@@ -12,7 +12,7 @@
 
 ## Calendar
 
-<video src="./assets/interactive-calendar-calendar.mp4" controls width="100%"></video>
+![](interactive-calendar-calendar.mp4)
 
 >다른 옵시디언 캘린더 플러그인들과 동일하게 기본적으로 날짜 선택시 데일리 노트가 오픈, 생성되는 기능을 제공합니다.
 
@@ -21,7 +21,7 @@
 
 ## Task
 
-<video src="./assets/interactive-calendar-task.mp4" controls width="100%"></video>
+![](interactive-calendar-task.mp4)
 
 >캘린더 하단에 TaskView를 통해 현재 선택된 날짜의 일정들, 현재 선택된 일정을 확인하고 관리할 수 있습니다.
 
@@ -33,7 +33,7 @@
 
 ## Period Task
 
-<video src="./assets/interactive-calendar-period-task.mp4" controls width="100%"></video>
+![](interactive-calendar-period-task.mp4)
 
 >플러그인의 핵심 기능, 캘린더에서 클릭 또는 드래그앤 드롭으로 데일리 노트에 간단하게 일정을 추가하고 수정할 수 있습니다. 기간 일정을 추가하는 경우 해당 기간에 속한 모든 데일리 노트에 일정이 추가됩니다.
 
@@ -47,7 +47,7 @@
 
 ## Setting
 
-<video src="./assets/interactive-calendar-settings.mp4" controls width="100%"></video>
+![](interactive-calendar-settings.mp4)
 
 
 >일정이 추가되는 섹션을 설정할 수 있습니다.
