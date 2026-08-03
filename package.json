@@ -1,7 +1,7 @@
 {
     "name": "interactive-calendar",
     "version": "1.0.0",
-    "description": "Interactive Calendar plugin for Obsidian",
+    "description": "Calendar for interactive scheduling",
     "main": "main.js",
     "scripts": {
         "dev": "node esbuild.config.mjs",

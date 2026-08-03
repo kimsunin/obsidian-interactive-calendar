@@ -3,7 +3,7 @@
     "name": "Interactive Calendar",
     "version": "1.0.0",
     "minAppVersion": "1.0.0",
-    "description": "Interactive Calendar plugin for Obsidian",
+    "description": "Calendar for interactive scheduling",
     "author": "kimsuin",
     "authorUrl": "https://github.com/kimsunin",
     "isDesktopOnly": false
