@@ -69,7 +69,7 @@ export class TaskView {
         if(displayTasks.length === 0){
             this.listContainerEl.createDiv({
                 cls: "task-view-empty",
-                text: "등록된 일정이 없습니다."
+                text: "no tasks for this date."
             });
             return;
         } 
