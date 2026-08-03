@@ -133,16 +133,40 @@
     font-weight: 700;
 }
 
+/* 강조된 기간 셀 내부의 일정 점(Dot) 흰색 반전 */
+.calendar-day-cell.period-highlighted-clicked .task-dot.is-completed,
+.calendar-day-cell.period-highlighted .task-dot.is-completed {
+    background-color: #ffffff !important;
+    opacity: 0.9;
+}
+
+.calendar-day-cell.period-highlighted-clicked .task-dot.is-incomplete,
+.calendar-day-cell.period-highlighted .task-dot.is-incomplete {
+    background-color: transparent !important;
+    border-color: #ffffff !important;
+    opacity: 1.0;
+}
+
+
 /* 이전/다음 달 날짜 (.other-month) */
 .calendar-day-cell.other-month {
     opacity: 0.25;
 }
 
-/* 오늘 날짜 (.is-today) */
+/* 오늘 날짜 (.is-today) - 평상시 옵시디언 기본 보라색 */
 .calendar-day-cell.is-today .day-number {
-    font-weight: 700;
-    color: #a855f7; /* 보라색 수치 강조 */
+    font-weight: 750;
+    color: var(--interactive-accent, #8b5cf6);
 }
+
+/* 일정 호버/클릭으로 강조된 경우 오늘 날짜도 다른 날짜와 동일하게 흰색으로 변환 */
+.calendar-day-cell.period-highlighted-clicked.is-today .day-number,
+.calendar-day-cell.period-highlighted.is-today .day-number {
+    color: #ffffff !important;
+    font-weight: 800;
+}
+
+
 
 /* 날짜 숫자 (.day-number) - 우측 상단 고정 및 호버 효과 */
 .day-number {
