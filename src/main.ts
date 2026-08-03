@@ -1,14 +1,22 @@
 import { Plugin, WorkspaceLeaf } from 'obsidian';
-import {InteractiveCalendarView, VIEW_TYPE_INTERACTIVE_CALENDAR} from "./components/InteractiveCalendarView";
+import {InteractiveCalendarView} from "./components/InteractiveCalendarView";
+import {SettingTab} from "./settings";
+import { CalendarSettings, DEFAULT_SETTINGS, VIEW_TYPE_INTERACTIVE_CALENDAR } from "./types";
 
 export default class InteractiveCalendarPlugin extends Plugin {
+	settings!: CalendarSettings;
+
 	async onload() {
 		console.log('Loading Interactive Calendar plugin');
+
+		await this.loadSettings();
+
+		this.addSettingTab(new SettingTab(this.app, this));
 
 		// 최상이 컨테이너 등록
 		this.registerView(
 			VIEW_TYPE_INTERACTIVE_CALENDAR,
-			(leaf: WorkspaceLeaf) => new InteractiveCalendarView(leaf)
+			(leaf: WorkspaceLeaf) => new InteractiveCalendarView(leaf, this.settings)
 		);
 
 		// 왼족 메뉴에 아이콘 추가
@@ -25,6 +33,14 @@ export default class InteractiveCalendarPlugin extends Plugin {
 			}
 		})
 	}
+
+	async loadSettings() {
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    }
+
+    async saveSettings() {
+        await this.saveData(this.settings);
+    }
 
 	// 사이드바에 뷰 추가
 	async activateView() {

@@ -6,15 +6,17 @@ import {
     createDailyNote
 } from "obsidian-daily-notes-interface";
 import { TaskParser } from "./TaskParser";
-import { Task } from "src/types";
+import { Task, CalendarSettings } from "src/types";
 
 export class DailyNoteService {
     private app: App;
     private taskParser: TaskParser;
+    private settings: CalendarSettings;
 
-    constructor(app: App){
+    constructor(app: App, settings: CalendarSettings){
         this.app = app;
         this.taskParser = new TaskParser();
+        this.settings = settings;
     }
 
     // 특정 달의 daily 노트를 읽고 파싱해서 task 배열로 반환
@@ -23,13 +25,15 @@ export class DailyNoteService {
         const dailyNotes: Record<string, TFile> = getAllDailyNotes();
         const tagMap = new Map<string, Task>();
 
+        const header = this.settings.useSectionHeader ? this.settings.todoSectionHeader : undefined;
+
         // Map을 통해 같은 tag에 속하는 일정들의 minDate, maxDate 갱신
         for (const file of Object.values(dailyNotes)){
             const noteDate = getDateFromFile(file, "day");
             if(!noteDate) continue;
 
             const content = await this.app.vault.read(file);
-            const tasks = this.taskParser.parse(content, file.path);
+            const tasks = this.taskParser.parse(content, file.path, header);
 
             for (const task of tasks){
                 task.date = noteDate.clone();
@@ -178,17 +182,48 @@ export class DailyNoteService {
 
         const content = await this.app.vault.read(file);
         const lines = content.split("\n");
-        const existingTasks = this.taskParser.parse(content, file.path);
 
         const newTaskContent = this.taskParser.stringify(task, targetDate);
 
-        if(existingTasks.length > 0){
-            const maxLineNumber = Math.max(...existingTasks.map(t => t.lineNumber));
-            lines.splice(maxLineNumber, 0, newTaskContent);
+        const useHeader = this.settings.useSectionHeader && this.settings.todoSectionHeader && this.settings.todoSectionHeader !== "none";
+        const headerTitle = useHeader ? this.settings.todoSectionHeader : null;
+
+        if(headerTitle){
+            let headerIndex = -1;
+            const cleanTitle = headerTitle.replace(/^#+\s*/, "").toLowerCase();
+
+            // 헤더 위치 찾기
+            for (let i = 0; i < lines.length; i ++){
+                const line = lines[i];
+                if(line.match(/^#+\s+/) && line.toLowerCase().includes(cleanTitle)){
+                    headerIndex = i;
+                    break;
+                }
+            }
+
+            if(headerIndex !== -1){
+                // 헤더가 있는 경우
+                let insertIndex = headerIndex + 1;
+                for (let i = headerIndex + 1; i < lines.length; i ++){
+                    const line = lines[i].trim();
+                    // 다음 헤더 또는 구분선이 나오기 전까지 사이에 삽입
+                    if(line.match(/^#+\s+/) || line.match(/^---+\s*$/)){
+                        insertIndex = insertIndex - 1;
+                        break;
+                    }
+                    insertIndex = i + 1;
+                }
+                lines.splice(insertIndex, 0, newTaskContent);
+            } else {
+                // 헤더가 없는 경우 
+                const formattedHeader = headerTitle.startsWith("#") ?
+                    headerTitle : `## ${headerTitle}`;
+                lines.push("", formattedHeader, newTaskContent);
+            }
         } else {
+            // 헤더를 사용하지 않는 경우
             lines.push(newTaskContent);
         }
-
         await this.app.vault.modify(file, lines.join("\n"));
     }
 

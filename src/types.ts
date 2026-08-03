@@ -52,12 +52,16 @@ export interface Task {
     rawText: string;
 }
 
+export const VIEW_TYPE_INTERACTIVE_CALENDAR = "interactive-calendar-view";
+
 // 플러그인 설정 데이터
-export interface CaledarSettings{
-    todoSectionHeader: string; // 파싱용 task 섹션 헤더
+export interface CalendarSettings{
+    useSectionHeader: boolean;
+    todoSectionHeader: string;
 }
 
 // 플러그인 기본 설정값 정의
-export const DEFAULT_SETTINGS: CaledarSettings = {
-    todoSectionHeader: "TODO",
+export const DEFAULT_SETTINGS: CalendarSettings = {
+    useSectionHeader: true,
+    todoSectionHeader: "none"
 }

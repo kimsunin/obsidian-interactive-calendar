@@ -1,10 +1,9 @@
 import {ItemView, WorkspaceLeaf, moment } from "obsidian";
 import { CalendarView } from "./CalendarView";
-import { Task } from "src/types";
+import { CalendarSettings, Task } from "src/types";
 import { DailyNoteService } from "src/services/DailyNoteService";
 import { TaskView } from "./TaskView";
-
-export const VIEW_TYPE_INTERACTIVE_CALENDAR = "interactive-calendar-view";
+import { VIEW_TYPE_INTERACTIVE_CALENDAR } from "src/types";
 
 export class InteractiveCalendarView extends ItemView {
     private calendarView: CalendarView | null = null;
@@ -22,9 +21,9 @@ export class InteractiveCalendarView extends ItemView {
     // 월별 task 캐시
     private monthTaskCache = new Map<string, Task[] >();
 
-    constructor(leaf: WorkspaceLeaf){
+    constructor(leaf: WorkspaceLeaf, settings: CalendarSettings){
         super(leaf);
-        this.dailyNoteService = new DailyNoteService(this.app);
+        this.dailyNoteService = new DailyNoteService(this.app, settings);
     }
 
     getViewType(): string {

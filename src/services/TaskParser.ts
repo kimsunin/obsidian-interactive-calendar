@@ -4,17 +4,47 @@ import { Task } from "../types";
 // task 문자열 <-> task 객체 변환 서비스
 export class TaskParser {
     // task 문자열 -> task 객체
-    public parse(markdown: string, filePath: string): Task[] {
+    public parse(markdown: string, filePath: string, targetHeader?: string): Task[] {
         const lines = markdown.split("\n");
         const rootTasks: Task[] = []; // 최상위 task
         const stack: Task[] = []; // 서브 task
 
         // - [ ] 또는 - [x]
         const taskRegex = /^(\s*)[-*+]\s+\[([ xX])\]\s*(.*)$/;
+        const headingRegex = /^(#+)\s+(.*)$/;
+
+        let isTargetSection = !targetHeader || targetHeader === "none";
+        let targetHeaderLevel = 0;
+
+        if (targetHeader && targetHeader !== "none") {
+            const match = targetHeader.match(/^(#+)/);
+            if (match) {
+                targetHeaderLevel = match[1].length;
+            }
+        }
 
         let isSkipMode = false;
         for (let i = 0; i < lines.length; i ++){
             const line = lines[i];
+            // 헤더 검사
+            const headingMatch = line.match(headingRegex);
+            if (headingMatch) {
+                const level = headingMatch[1].length;
+                const title = headingMatch[2].trim();
+                const fullHeader = `${headingMatch[1]} ${title}`;
+
+                if (targetHeader && targetHeader !== "none") {
+                    if (fullHeader.toLowerCase() === targetHeader.toLowerCase() || title.toLowerCase() === targetHeader.replace(/^#+\s*/, "").toLowerCase()) {
+                        isTargetSection = true;
+                    } else if (isTargetSection && level <= targetHeaderLevel) {
+                        isTargetSection = false;
+                    }
+                }
+                continue;
+            }
+
+            if (!isTargetSection) continue;
+
             const match = line.match(taskRegex);
 
             if(!match) continue;

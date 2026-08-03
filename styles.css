@@ -59,8 +59,8 @@
 .calendar-header-controls-next:hover,
 .calendar-header-controls-today:hover,
 .calendar-header-controls-refresh:hover {
-    background-color: transparent !important;
-    transform: none !important;
+    background-color: transparent;
+    transform: none;
     color: var(--text-normal);
 }
 
@@ -124,12 +124,12 @@
 /* 호버된 일정 기간 옵시디언 기본 보라색 강조 (.period-highlighted) */
 .calendar-day-cell.period-highlighted-clicked,
 .calendar-day-cell.period-highlighted {
-    background-color: var(--interactive-accent, #8b5cf6) !important;
+    background-color: var(--interactive-accent, #8b5cf6);
 }
 
 .calendar-day-cell.period-highlighted-clicked .day-number,
 .calendar-day-cell.period-highlighted .day-number {
-    color: #ffffff !important;
+    color: #ffffff;
     font-weight: 700;
 }
 
@@ -158,7 +158,7 @@
 }
 
 .day-number:hover {
-    color: var(--text-accent) !important;
+    color: var(--text-accent);
     text-decoration: underline;
 }
 
@@ -281,28 +281,8 @@
 }
 
 /* ==========================================================================
-   6. 일정 추가 버튼 (+) span 투명 & 우측 정렬 스타일
+   6. TaskCreateModal 스타일
    ========================================================================== */
-
-.task-add-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 2px 4px;
-    margin-left: auto; /* flex 박스 내에서 우측 끝으로 정렬 */
-    user-select: none;
-    border-radius: 4px;
-    transition: color 0.15s ease;
-}
-
-.task-add-btn svg {
-    width: 14px;
-    height: 14px;
-    stroke-width: 2.2px;
-}
-
-.task-add-btn:hover {
-    color: var(--text-normal);
+.modal.task-create-modal {
+    width: 400px;
 }

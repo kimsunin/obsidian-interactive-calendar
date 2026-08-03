@@ -1,5 +1,5 @@
 import { App, setIcon, moment } from "obsidian";
-import { CalendarViewProps, Task  } from "../types"
+import { CalendarViewProps, Task  } from "src/types"
 import { TaskCreateModal } from "src/components/TaskCreateModal";
 
 

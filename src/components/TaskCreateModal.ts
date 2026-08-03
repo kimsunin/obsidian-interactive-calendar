@@ -9,19 +9,21 @@ export class TaskCreateModal extends Modal {
     }
 
     onOpen(){
+        this.modalEl.addClass("task-create-modal");
         const { contentEl } = this;
         contentEl.empty();
+
         
-        contentEl.createEl("h3", { text: "Add New Task" });
+        contentEl.createEl("h4", { text: "Add New Task" });
 
         const s = this.task.startDate || this.task.date;
         const e = this.task.endDate || this.task.date;
         const periodText = s.isSame(e, "day") ? s.format("YYYY-MM-DD") : `${s.format("YYYY-MM-DD")} ~ ${e.format("YYYY-MM-DD")}`;
 
-        new Setting(contentEl).setName("period").setDesc(periodText);
+        new Setting(contentEl).setDesc(periodText);
 
-        new Setting(contentEl).setName("title").addText((text) => {
-            text.setPlaceholder("enter task title");
+        new Setting(contentEl).addText((text) => {
+            text.setPlaceholder("enter task");
             text.onChange((value) =>{
                 this.task.text = value;
             });
