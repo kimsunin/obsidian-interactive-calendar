@@ -106,7 +106,7 @@ export class TaskView {
             }
         });
 
-        itemContentEl.createEl("span", {
+        itemContentEl.createSpan({
             cls: `task-text ${task.completed ? "is-completed" : ""}`,
             text: task.text
         });

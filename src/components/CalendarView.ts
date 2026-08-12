@@ -51,7 +51,7 @@ export class CalendarView {
         this.headerEl.empty();
 
         // 연도-월 컨테이너
-        this.headerEl.createEl("span", {
+        this.headerEl.createSpan({
             cls: "calendar-header-title",
             text: props.currentMonth.format("YYYY-MM")
         });
@@ -60,7 +60,7 @@ export class CalendarView {
         const controlsContainer = this.headerEl.createDiv({cls: "calendar-header-controls"});
 
         // < 버튼
-        const prevBtn = controlsContainer.createEl("span", {
+        const prevBtn = controlsContainer.createSpan({
             cls: "calendar-header-controls-prev"
         });
         setIcon(prevBtn, "chevron-left");
@@ -70,7 +70,7 @@ export class CalendarView {
         });
 
         // today 버튼
-        const todayBtn = controlsContainer.createEl("span", {
+        const todayBtn = controlsContainer.createSpan({
             cls: "calendar-header-controls-today",
             text: "TODAY"
         });
@@ -80,7 +80,7 @@ export class CalendarView {
         });
 
         // > 버튼
-        const nextBtn = controlsContainer.createEl("span", {
+        const nextBtn = controlsContainer.createSpan({
             cls: "calendar-header-controls-next"
         });
         setIcon(nextBtn, "chevron-right");
@@ -90,7 +90,7 @@ export class CalendarView {
         });
 
         // 새로고침 버튼
-        const refreshBtn = controlsContainer.createEl("span", {
+        const refreshBtn = controlsContainer.createSpan({
             cls: "calendar-header-controls-refresh"
         });
         setIcon(refreshBtn, "refresh-cw");
