@@ -14,7 +14,9 @@ export class SettingTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
-        containerEl.createEl("h2", { text: "Interactive Calendar Settrings"});
+        new Setting(containerEl)
+            .setName("Interactive Calendar Settings")
+            .setHeading();
 
         const dailyNoteSettings = getDailyNoteSettings();
         const templatePath = dailyNoteSettings?.template;
