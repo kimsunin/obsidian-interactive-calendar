@@ -7,8 +7,6 @@ export default class InteractiveCalendarPlugin extends Plugin {
 	settings!: CalendarSettings;
 
 	async onload() {
-		console.log('Loading Interactive Calendar plugin');
-
 		await this.loadSettings();
 
 		this.addSettingTab(new SettingTab(this.app, this));
@@ -21,15 +19,15 @@ export default class InteractiveCalendarPlugin extends Plugin {
 
 		// 왼족 메뉴에 아이콘 추가
 		this.addRibbonIcon("calendar", "Open Interactive Calendar", () => {
-			this.activateView();
+			void this.activateView();
 		});
 
 		// 명령어로 실행
 		this.addCommand({
-			id: "open-interactive-calendar",
-			name: "Open Interactive Calendar",
+			id: "open",
+			name: "Open",
 			callback : () => {
-				this.activateView();
+				void this.activateView();
 			}
 		})
 	}
@@ -61,11 +59,10 @@ export default class InteractiveCalendarPlugin extends Plugin {
 			}
 		}
 		if(leaf){
-			this.app.workspace.revealLeaf(leaf);
+			void this.app.workspace.revealLeaf(leaf);
 		}
 	}
 
 	onunload() {
-		console.log('Unloading Interactive Calendar plugin');
 	}
 }
