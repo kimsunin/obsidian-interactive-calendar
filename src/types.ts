@@ -8,7 +8,7 @@ export interface CalendarViewProps {
     selectedTag: string| null;
     onDateSelect: (date: moment.Moment) => void;
     onMonthChange: (date: moment.Moment) => void;
-    onTagSelect: (tag: string) => void;
+    onTagSelect: (tag: string | null) => void;
     onDayNumberClick: (date: moment.Moment) => void;
     onPeriodResize: (
         task: Task,

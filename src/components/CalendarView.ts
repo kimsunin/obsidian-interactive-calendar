@@ -75,8 +75,8 @@ export class CalendarView {
             text: "TODAY"
         });
         todayBtn.addEventListener("click", () => {
-            props.onDateSelect(moment());
-            props.onMonthChange(moment());
+            props.onDateSelect(moment() as moment.Moment);
+            props.onMonthChange(moment() as moment.Moment);
         });
 
         // > 버튼
@@ -120,7 +120,7 @@ export class CalendarView {
             const dayDate = currentDate.clone();
             const isCurrentMonth = dayDate.month() === props.currentMonth.month();
 
-            const isToday = dayDate.isSame(moment(), "day");
+            const isToday = dayDate.isSame(moment() as moment.Moment, "day");
 
             const cellClass = ["calendar-day-cell"];
             if(!isCurrentMonth) cellClass.push("other-month");
@@ -199,7 +199,7 @@ export class CalendarView {
             // 클릭 이벤트
             dayCell.addEventListener("click", () => {
                 if (props.selectedTag && props.onTagSelect){
-                    props.onTagSelect(null as any);
+                    props.onTagSelect(null);
                 }
             });
 
@@ -370,7 +370,7 @@ export class CalendarView {
             const dateStr = cell.dataset.date;
             if (!dateStr) return;
 
-            const cellDate = moment(dateStr);
+            const cellDate = moment(dateStr) as moment.Moment;
             if (cellDate.isBetween(startDate, endDate, "day", "[]")) {
                 cell.classList.add(className);
             }

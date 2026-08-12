@@ -73,7 +73,7 @@ export class TaskParser {
             const task: Task = {
                 id: `${filePath}:${i}`,
                 text: text,
-                date: moment(),
+                date: moment() as moment.Moment,
                 completed: isCompleted,
                 level: level,
                 children: [],

@@ -14,8 +14,8 @@ export class InteractiveCalendarView extends ItemView {
     private dailyNoteService: DailyNoteService
 
     // 날짜 상태 관리
-    private selectedDate: moment.Moment = moment();
-    private currentMonth: moment.Moment = moment().startOf("month");
+    private selectedDate: moment.Moment = moment() as moment.Moment;
+    private currentMonth: moment.Moment = moment().startOf("month") as moment.Moment;
     private selectedTag: string | null = null;
 
     // 월별 task 캐시
@@ -77,7 +77,7 @@ export class InteractiveCalendarView extends ItemView {
                     this.currentMonth = date;
                     this.updateView();
                 },
-                onTagSelect: (tag: string) => {
+                onTagSelect: (tag: string | null) => {
                     this.selectedTag = tag;
                     this.updateView();
                 },

@@ -285,15 +285,15 @@ export class DailyNoteService {
         // 삭제
         for (const dateStr of oldDates){
             if(!newDates.has(dateStr)){
-                const remvoedDate = moment(dateStr, "YYYY-MM-DD");
-                await this.removeTask(task, remvoedDate);
+                const removedDate = moment(dateStr, "YYYY-MM-DD") as moment.Moment;
+                await this.removeTask(task, removedDate);
             }
         }
         
         // 추가
         for (const dateStr of newDates){
             if(!oldDates.has(dateStr)){
-                const addedDate = moment(dateStr, "YYYY-MM-DD");
+                const addedDate = moment(dateStr, "YYYY-MM-DD") as moment.Moment;
                 const tempTask: Task = {
                     ...task,
                     date: addedDate.clone(),
