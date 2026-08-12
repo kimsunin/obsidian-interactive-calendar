@@ -47,8 +47,8 @@ export class DailyNoteService {
                         tagMap.set(task.tag, task);
                     } else {
                         const bounds = tagMap.get(task.tag)!;
-                        if (noteDate.isBefore(bounds.startDate!)) bounds.startDate = noteDate.clone();
-                        if (noteDate.isAfter(bounds.endDate!)) bounds.endDate = noteDate.clone();
+                        if (noteDate.isBefore(bounds.startDate)) bounds.startDate = noteDate.clone();
+                        if (noteDate.isAfter(bounds.endDate)) bounds.endDate = noteDate.clone();
 
                         for(const child of task.children){
                             child.date = noteDate.clone();
@@ -267,8 +267,6 @@ export class DailyNoteService {
         if(!task.tag) return;
 
         if(oldStart.isSame(newStart, "day") && oldEnd.isSame(newEnd, "day")) return;
-
-        const tagKeyword = `#${task.tag}`;
 
         const oldDates = new Set<string>();
         const currOld = oldStart.clone();

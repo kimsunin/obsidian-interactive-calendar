@@ -92,7 +92,7 @@ export class InteractiveCalendarView extends ItemView {
                 onCreateTask: async (task: Task | null) =>{
                     if(task){
                         const curr = task.startDate!.clone();
-                        while(curr.isSameOrBefore(task.endDate!, "day")){
+                        while(curr.isSameOrBefore(task.endDate, "day")){
                             const dayTask: Task = {
                                 ...task,
                                 date: curr.clone()
