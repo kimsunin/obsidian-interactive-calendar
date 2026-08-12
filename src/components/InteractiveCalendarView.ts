@@ -68,16 +68,16 @@ export class InteractiveCalendarView extends ItemView {
                 currentMonth: this.currentMonth,
                 tasksMap: this.monthTaskCache,
                 selectedTag: this.selectedTag,
-                onDateSelect: async (date: moment.Moment) => {
+                onDateSelect: (date: moment.Moment) => {
                     this.selectedDate = date;
                     this.selectedTag = null;
                     this.updateView();
                 },
-                onMonthChange: async (date: moment.Moment) => {
+                onMonthChange: (date: moment.Moment) => {
                     this.currentMonth = date;
                     this.updateView();
                 },
-                onTagSelect: async (tag: string) => {
+                onTagSelect: (tag: string) => {
                     this.selectedTag = tag;
                     this.updateView();
                 },
