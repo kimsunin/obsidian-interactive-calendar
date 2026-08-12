@@ -1,4 +1,4 @@
-import { App, Modal, Setting, moment } from "obsidian";
+import { App, Modal, Setting } from "obsidian";
 import { Task } from "src/types";
 
 export class TaskCreateModal extends Modal {

@@ -1,4 +1,4 @@
-import { App, setIcon, displayTooltip, moment } from "obsidian";
+import { App } from "obsidian";
 import { Task, TaskViewProps } from "src/types";
 
 
