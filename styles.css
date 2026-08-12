@@ -136,14 +136,14 @@
 /* 강조된 기간 셀 내부의 일정 점(Dot) 흰색 반전 */
 .calendar-day-cell.period-highlighted-clicked .task-dot.is-completed,
 .calendar-day-cell.period-highlighted .task-dot.is-completed {
-    background-color: #ffffff !important;
+    background-color: #ffffff;
     opacity: 0.9;
 }
 
 .calendar-day-cell.period-highlighted-clicked .task-dot.is-incomplete,
 .calendar-day-cell.period-highlighted .task-dot.is-incomplete {
-    background-color: transparent !important;
-    border-color: #ffffff !important;
+    background-color: transparent;
+    border-color: #ffffff;
     opacity: 1.0;
 }
 
@@ -162,7 +162,7 @@
 /* 일정 호버/클릭으로 강조된 경우 오늘 날짜도 다른 날짜와 동일하게 흰색으로 변환 */
 .calendar-day-cell.period-highlighted-clicked.is-today .day-number,
 .calendar-day-cell.period-highlighted.is-today .day-number {
-    color: #ffffff !important;
+    color: #ffffff;
     font-weight: 800;
 }
 
