@@ -1,10 +1,10 @@
 {
-    "id": "interactive-calendar",
-    "name": "Interactive Calendar",
-    "version": "1.0.1",
-    "minAppVersion": "1.7.2",
-    "description": "Calendar for interactive scheduling.",
-    "author": "kimsuin",
-    "authorUrl": "https://github.com/kimsunin",
-    "isDesktopOnly": false
+  "id": "interactive-calendar",
+  "name": "Interactive Calendar",
+  "version": "1.0.2",
+  "minAppVersion": "1.7.2",
+  "description": "Calendar for interactive scheduling.",
+  "author": "kimsuin",
+  "authorUrl": "https://github.com/kimsunin",
+  "isDesktopOnly": false
 }
