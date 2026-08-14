@@ -9,16 +9,16 @@ export interface CalendarViewProps {
     onDateSelect: (date: moment.Moment) => void;
     onMonthChange: (date: moment.Moment) => void;
     onTagSelect: (tag: string | null) => void;
-    onDayNumberClick: (date: moment.Moment) => void;
+    onDayNumberClick: (date: moment.Moment) => Promise<void> | void;
     onPeriodResize: (
         task: Task,
         oldStart: moment.Moment,
         oldEnd: moment.Moment,
         newStart: moment.Moment,
         newEnd: moment.Moment
-    ) => void;
-    onCreateTask: (task: Task | null) => void;
-    onRefresh: () => void;
+    ) => Promise<void> | void;
+    onCreateTask: (task: Task | null) => Promise<void> | void;
+    onRefresh: () => Promise<void> | void;
 }
 
 // TaskView props 데이터
@@ -26,7 +26,7 @@ export interface TaskViewProps {
     selectedDate: moment.Moment;
     selectedTag: string | null;
     tasksMap: Map<string, Task[]>;
-    onTaskToggle: (task: Task) => void; // 체크박스 토글 콜백
+    onTaskToggle: (task: Task) => Promise<void> | void; // 체크박스 토글 콜백
 }
 
 // task 데이터
