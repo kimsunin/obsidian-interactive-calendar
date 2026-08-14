@@ -102,7 +102,7 @@ export class TaskView {
         checkboxEl.addEventListener("click", () => {
             task.completed = checkboxEl.checked;
             if (props.onTaskToggle) {
-                props.onTaskToggle(task);
+                void props.onTaskToggle(task);
             }
         });
 

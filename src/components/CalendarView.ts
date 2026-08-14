@@ -96,7 +96,7 @@ export class CalendarView {
         setIcon(refreshBtn, "refresh-cw");
         refreshBtn.addEventListener("click", () => {
             if (props.onRefresh) {
-                props.onRefresh();
+                void props.onRefresh();
             }
         });
 
@@ -143,7 +143,7 @@ export class CalendarView {
                     props.onMonthChange(dayDate.clone());
                 }
                 if(props.onDayNumberClick){
-                    props.onDayNumberClick(dayDate);
+                    void props.onDayNumberClick(dayDate);
                 }
             });
 
@@ -315,7 +315,7 @@ export class CalendarView {
 
                 if(newStart && newEnd && (!newStart.isSame(origStart, "day") || !newEnd.isSame(origEnd, "day"))){
                     if(this.currentProps.onPeriodResize){
-                        this.currentProps.onPeriodResize(resizedTask, origStart, origEnd, newStart, newEnd);
+                        void this.currentProps.onPeriodResize(resizedTask, origStart, origEnd, newStart, newEnd);
                     }
                 } 
 
@@ -344,7 +344,7 @@ export class CalendarView {
                 if (this.currentProps.onCreateTask) {
                     new TaskCreateModal(this.app, tempTask, (newTask) => {
                         if (this.currentProps?.onCreateTask) {
-                            this.currentProps.onCreateTask(newTask);
+                            void this.currentProps.onCreateTask(newTask);
                         } 
                     }).open();
                 }

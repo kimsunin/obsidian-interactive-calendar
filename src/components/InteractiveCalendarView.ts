@@ -15,7 +15,7 @@ export class InteractiveCalendarView extends ItemView {
 
     // 날짜 상태 관리
     private selectedDate: moment.Moment = moment() as moment.Moment;
-    private currentMonth: moment.Moment = (moment() as moment.Moment).startOf("month") as moment.Moment;
+    private currentMonth: moment.Moment = (moment() as moment.Moment).startOf("month");
     private selectedTag: string | null = null;
 
     // 월별 task 캐시
