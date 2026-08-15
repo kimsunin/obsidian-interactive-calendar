@@ -99,9 +99,7 @@ export class CalendarView {
                 void props.onRefresh();
             }
         });
-
     }
-
 
     private renderGrid(props: CalendarViewProps){
         this.gridEl.empty();
@@ -155,8 +153,14 @@ export class CalendarView {
             );
 
             if(rootDayTasks.length > 0){
+                // 7개만 렌더링하고 나머지는 +숫자로 렌더링
                 const dotsContainer = dayCell.createDiv({cls: "task-dots-container"});
-                rootDayTasks.forEach(task => {
+
+                const hasMore = rootDayTasks.length > 7;
+                const renderCount = hasMore ? 7 : rootDayTasks.length;
+
+                for (let idx = 0; idx < renderCount; idx ++){
+                    const task = rootDayTasks[idx];
                     const dotClass = ["task-dot"];
                     if (task.completed) {
                         dotClass.push("is-completed");
@@ -192,9 +196,15 @@ export class CalendarView {
                             props.onTagSelect(task.tag);
                         }
                     })
-                });
+                }
+                // 초과 태그만큼 +숫자로 렌더링
+                if(hasMore){
+                    dotsContainer.createDiv({
+                        cls: "task-dot-more",
+                        text: ".."
+                    });
+                }
             }
-
 
             // 클릭 이벤트
             dayCell.addEventListener("click", () => {

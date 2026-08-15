@@ -3,14 +3,17 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-width: 320px; /* 사이드바를 너무 좁게 줄였을 때 찌그러짐 방지 및 가로 스크롤 대응 */
     padding: 12px;
     box-sizing: border-box;
     font-family: var(--font-interface);
     background-color: var(--background-secondary); /* 옵시디언 사이드바 배경색 */
+    overflow: auto; /* 달력이 너무 커지거나 화면이 작을 때 세로/가로 스크롤 활성화 */
 }
 
 .interactive-calendar-top {
     margin-bottom: 12px;
+    flex-shrink: 0; /* 달력 크기가 키워졌을 때 세로로 찌그러지지 않고 크기 유지 */
 }
 
 /* 1. 헤더 영역 (.calendar-view-header) */
@@ -115,6 +118,7 @@
     transition: background-color 0.15s ease, color 0.15s ease;
     overflow: hidden;
     box-sizing: border-box;
+    container-type: inline-size; /* 날짜 칸 크기 변경에 따른 폰트 크기 반응형 지원 */
 }
 
 .calendar-day-cell:hover {
@@ -188,21 +192,22 @@
 
 /* 4. 일정 점(Dot) 컨테이너 (그리드 4열 78% 너비 정밀 대칭) */
 .task-dots-container {
+    position: absolute;
+    top: 44%; /* 시작 위치를 약간 올려 아래쪽에 최대한 많은 공간 확보 */
+    left: 11%; /* 가로 중앙 정렬 (100% - 78%) / 2 */
+    width: 78%;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px 6%;
+    grid-template-columns: repeat(4, minmax(0, 1fr)); /* +숫자로 인해 다른 열이 축소되는 것을 방지 */
+    gap: 10cqw; /* cqw 단위를 사용하여 가로/세로 여백이 물리적으로 완전히 일치하며 동일하게 커지도록 설정 */
     justify-items: center;
     align-items: center;
-    width: 78%;
-    margin: 0 auto;
-    max-height: 48%;
     overflow: hidden;
     pointer-events: none;
 }
 
-/* 점(Dot) 기본 스타일 (또렷한 톤) */
+/* 점(Dot) 기본 스타일 (또렷한 톤 - 비율 증가 상태 복원) */
 .task-dot {
-    width: 75%;
+    width: 85%; /* 점의 가로 비율을 75% -> 85%로 상향 조정 */
     aspect-ratio: 1;
     border-radius: 50%;
     box-sizing: border-box;
@@ -232,7 +237,8 @@
    ========================================================================== */
 
 .interactive-calendar-bottom {
-    flex: 1;
+    flex: 1 0 auto; /* 남은 공간을 채우되, 공간이 부족해도 찌그러지지 않고 크기 유지 */
+    min-height: 180px; /* 최소 일정 목록 영역 보장 */
     overflow-y: auto;
     border-top: 1px solid var(--background-modifier-border);
     padding-top: 12px;
@@ -309,4 +315,25 @@
    ========================================================================== */
 .modal.task-create-modal {
     width: 400px;
+}
+
+/* 8번째 자리에 위치할 +숫자 스타일 */
+.task-dot-more {
+    font-size: 8px; /* 커진 점 크기에 어울리도록 7.5px -> 8px로 상향 */
+    font-weight: 750;
+    color: var(--text-muted);
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 85%; /* 일반 점(Dot)과 동일하게 85% 너비로 맞춰 좌우 여백을 대칭으로 설정 */
+    height: 100%;
+    user-select: none;
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+}
+
+/* 캘린더가 드래그/클릭으로 강조(보라색)되었을 때 텍스트 색상 흰색 반전 */
+.calendar-day-cell.period-highlighted-clicked .task-dot-more,
+.calendar-day-cell.period-highlighted .task-dot-more {
+    color: #ffffff;
 }
