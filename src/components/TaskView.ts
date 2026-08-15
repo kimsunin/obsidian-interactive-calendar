@@ -76,7 +76,7 @@ export class TaskView {
 
         const ulEl = this.listContainerEl.createEl("ul", { cls: "task-view-list"});
 
-        displayTasks.forEach((task, index) => {
+        displayTasks.forEach((task) => {
             this.renderTaskNode(ulEl, task, props);
         })
     }
@@ -99,7 +99,8 @@ export class TaskView {
         });
         checkboxEl.checked = task.completed;
         
-        checkboxEl.addEventListener("click", () => {
+        checkboxEl.addEventListener("click", (e) => {
+            e.stopPropagation();
             task.completed = checkboxEl.checked;
             if (props.onTaskToggle) {
                 void props.onTaskToggle(task);
@@ -110,6 +111,32 @@ export class TaskView {
             cls: `task-text ${task.completed ? "is-completed" : ""}`,
             text: task.text
         });
+
+        if(task.level === 0 && task.tag && props.selectedTag === null){
+            itemContentEl.classList.add("is-clickable");
+            
+            // 마우스 호버 시 캘린더 기간 강조
+            itemContentEl.addEventListener("mouseenter", () => {
+                if (props.onTaskHover) {
+                    props.onTaskHover(task, true);
+                }
+            });
+
+            // 마우스 호버 해제 시 캘린더 기간 강조 해제
+            itemContentEl.addEventListener("mouseleave", () => {
+                if (props.onTaskHover) {
+                    props.onTaskHover(task, false);
+                }
+            });
+
+            // 상위 일정 클릭시 태그 선택
+            itemContentEl.addEventListener("click", (e) => {
+                e.stopPropagation();
+                if(props.onTagSelect){
+                    props.onTagSelect(task.tag!);
+                }
+            })
+        }
 
         if(task.children && task.children.length > 0){
             const childUl = liEl.createEl("ul", { 

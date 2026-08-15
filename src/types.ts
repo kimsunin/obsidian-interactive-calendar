@@ -27,6 +27,8 @@ export interface TaskViewProps {
     selectedTag: string | null;
     tasksMap: Map<string, Task[]>;
     onTaskToggle: (task: Task) => Promise<void> | void; // 체크박스 토글 콜백
+    onTagSelect: (tag: string | null) => void;
+    onTaskHover: (task: Task, isEnter: boolean) => void;
 }
 
 // task 데이터

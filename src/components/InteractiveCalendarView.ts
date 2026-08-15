@@ -133,6 +133,19 @@ export class InteractiveCalendarView extends ItemView {
                 onTaskToggle: async (task: Task) => {
                     await this.dailyNoteService.toggleTaskState(task);
                     this.updateView();
+                },
+                onTagSelect: (tag: string | null) => {
+                    this.selectedTag = tag;
+                    this.updateView();
+                },
+                onTaskHover: (task: Task, isEnter: boolean) => {
+                    if(this.calendarView){
+                        if(isEnter && task.startDate && task.endDate){
+                            this.calendarView.highlightPeriod(task.startDate, task.endDate, "period-highlighted");
+                        } else {
+                            this.calendarView.clearHighlight("period-highlighted");
+                        }
+                    }
                 }
             })
         }

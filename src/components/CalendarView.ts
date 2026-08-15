@@ -373,7 +373,7 @@ export class CalendarView {
     
 
     // 기간 활성화 함수
-    private highlightPeriod(startDate: moment.Moment, endDate: moment.Moment, className:string) {
+    public highlightPeriod(startDate: moment.Moment, endDate: moment.Moment, className:string) {
         const cells = this.gridEl.querySelectorAll<HTMLElement>(".calendar-day-cell");
 
         cells.forEach(cell => {
@@ -388,7 +388,7 @@ export class CalendarView {
     }
 
     // 기간 비활성화 함수 
-    private clearHighlight(className: string){
+    public clearHighlight(className: string){
         const cells = this.gridEl.querySelectorAll<HTMLElement>(".calendar-day-cell");
         cells.forEach(cell => {
             cell.classList.remove(className);
