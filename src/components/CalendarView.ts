@@ -201,7 +201,7 @@ export class CalendarView {
                 if(hasMore){
                     dotsContainer.createDiv({
                         cls: "task-dot-more",
-                        text: ".."
+                        text: "··"
                     });
                 }
             }

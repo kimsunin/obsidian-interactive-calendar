@@ -319,15 +319,15 @@
 
 /* 8번째 자리에 위치할 +숫자 스타일 */
 .task-dot-more {
-    font-size: 8px; /* 커진 점 크기에 어울리도록 7.5px -> 8px로 상향 */
+    font-size: 18cqw; /* 날짜 칸 너비(cqw) 대비 비례하여 글자 크기도 스케일링 */
     font-weight: 750;
     color: var(--text-muted);
     line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 85%; /* 일반 점(Dot)과 동일하게 85% 너비로 맞춰 좌우 여백을 대칭으로 설정 */
-    height: 100%;
+    width: 85%; /* 일반 점(Dot)과 동일하게 85% 너비 지정 */
+    aspect-ratio: 1; /* 점과 완전히 일치하도록 1:1 종횡비 적용 */
     user-select: none;
     white-space: nowrap; /* 텍스트 줄바꿈 방지 */
 }
