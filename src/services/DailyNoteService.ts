@@ -122,10 +122,7 @@ export class DailyNoteService {
                 for (let i = 0; i < lines.length; i ++){
                     const line = lines[i];
                     if(line.includes(tagKeyword)){
-                        const updatedLine = task.completed ? 
-                            lines[i] = line.replace(/^(\s*[-*+]\s+\[)[ ](\])/, "$1x$2") : 
-                            lines[i] = line.replace(/^(\s*[-*+]\s+\[)[xX](\])/, "$1 $2");
-
+                        const updatedLine = task.completed ? line.replace(/^(\s*[-*+]\s+\[)[ ](\])/, "$1x$2") : line.replace(/^(\s*[-*+]\s+\[)[xX](\])/, "$1 $2");
                         if(lines[i] !== updatedLine){
                             lines[i] = updatedLine;
                             hasChanged = true;
