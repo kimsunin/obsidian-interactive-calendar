@@ -86,21 +86,11 @@ export class InteractiveCalendarView extends ItemView {
                     this.updateView();
                 },
                 onPeriodResize: async (task, oldStart, oldEnd, newStart, newEnd) => {
-                    await this.dailyNoteService.updateTaskPeriod(task, oldStart, oldEnd, newStart, newEnd);
                     this.updateView();  
+                    await this.dailyNoteService.updateTaskPeriod(task, oldStart, oldEnd, newStart, newEnd);
                 },
                 onCreateTask: async (task: Task | null) =>{
                     if(task){
-                        const curr = task.startDate!.clone();
-                        while(curr.isSameOrBefore(task.endDate, "day")){
-                            const dayTask: Task = {
-                                ...task,
-                                date: curr.clone()
-                            };
-                            await this.dailyNoteService.addTask(dayTask);
-                            curr.add(1, "day");
-                        }
-
                         const startMonth = task.startDate!.clone().startOf("month");
                         const endMonth = task.endDate!.clone().startOf("month");
                         const mCurr = startMonth.clone();
@@ -115,8 +105,21 @@ export class InteractiveCalendarView extends ItemView {
                             mCurr.add(1, "month");
                         }
                         this.selectedTag = task.tag || null;
+
+                        this.updateView();
+
+                        const filePromises: Promise<void>[] = [];
+                        const curr = task.startDate!.clone();
+                        while(curr.isSameOrBefore(task.endDate, "day")){
+                            const dayTask: Task = {
+                                ...task,
+                                date: curr.clone()
+                            };
+                            filePromises.push(this.dailyNoteService.addTask(dayTask));
+                            curr.add(1, "day");
+                        }
+                        await Promise.all(filePromises);
                     }
-                    this.updateView();
                 },
                 onRefresh: async () => {
                     await this.refreshAllNotes();
@@ -131,8 +134,8 @@ export class InteractiveCalendarView extends ItemView {
                 selectedTag: this.selectedTag,
                 tasksMap: this.monthTaskCache,   
                 onTaskToggle: async (task: Task) => {
-                    await this.dailyNoteService.toggleTaskState(task);
                     this.updateView();
+                    await this.dailyNoteService.toggleTaskState(task);
                 },
                 onTagSelect: (tag: string | null) => {
                     this.selectedTag = tag;
