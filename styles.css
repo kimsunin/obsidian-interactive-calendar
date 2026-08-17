@@ -203,9 +203,9 @@
 
 /* 점(Dot) 기본 스타일 (또렷한 톤 - 비율 증가 상태 복원) */
 .task-dot {
-    width: 95%; /* 점의 가로 비율을 85% -> 95%로 추가 상향 조정 */
+    width: 100%; /* 점의 가로 비율을 85% -> 95%로 추가 상향 조정 */
     aspect-ratio: 1;
-    border-radius: 50%;
+    border-radius: 20%;
     box-sizing: border-box;
     pointer-events: auto;
     transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
