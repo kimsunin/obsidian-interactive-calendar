@@ -353,6 +353,8 @@ export class CalendarView {
 
                 if (this.currentProps.onCreateTask) {
                     new TaskCreateModal(this.app, tempTask, (newTask) => {
+                        this.clearHighlight("period-highlighted-clicked")
+
                         if (this.currentProps?.onCreateTask) {
                             void this.currentProps.onCreateTask(newTask);
                         } 
