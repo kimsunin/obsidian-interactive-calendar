@@ -338,7 +338,7 @@ export class CalendarView {
                 this.dragEnd = null;
 
                 const tempTask: Task = {
-                    id: `temp-${s.format("YYYY-MM-DD")}`,
+                    id: `temp-${s.format("YYYY-MM-DD")}-${Math.random().toString(36).substring(2, 9)}`,
                     text: "",
                     date: s.clone(),
                     completed: false,
