@@ -6,10 +6,9 @@ export interface CalendarViewProps {
     currentMonth: moment.Moment;
     tasksMap: Map<string, Task[]>;
     selectedTag: string| null;
-    onDateSelect: (date: moment.Moment) => void;
+    onDateSelect: (date: moment.Moment, openNote: boolean) => Promise<void> | void;
     onMonthChange: (date: moment.Moment) => void;
     onTagSelect: (tag: string | null) => void;
-    onDayNumberClick: (date: moment.Moment) => Promise<void> | void;
     onPeriodResize: (
         task: Task,
         oldStart: moment.Moment,

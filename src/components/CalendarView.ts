@@ -75,7 +75,7 @@ export class CalendarView {
             text: "TODAY"
         });
         todayBtn.addEventListener("click", () => {
-            props.onDateSelect(moment() as moment.Moment);
+            props.onDateSelect(moment() as moment.Moment, false);
             props.onMonthChange(moment() as moment.Moment);
         });
 
@@ -136,12 +136,9 @@ export class CalendarView {
             // 날짜 클릭 이벤트
             dayNumberEl.addEventListener("click", (e) => {
                 e.stopPropagation();
-                props.onDateSelect(dayDate);
+                void props.onDateSelect(dayDate, true);
                 if (dayDate.month() !== props.currentMonth.month()) {
                     props.onMonthChange(dayDate.clone());
-                }
-                if(props.onDayNumberClick){
-                    void props.onDayNumberClick(dayDate);
                 }
             });
 
@@ -189,7 +186,7 @@ export class CalendarView {
 
                         // 날짜도 변경
                         if (props.onDateSelect) {
-                            props.onDateSelect(dayDate);
+                            props.onDateSelect(dayDate, false);
                         }
 
                         if(task.tag && props.onTagSelect){

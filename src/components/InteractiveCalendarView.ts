@@ -68,9 +68,12 @@ export class InteractiveCalendarView extends ItemView {
                 currentMonth: this.currentMonth,
                 tasksMap: this.monthTaskCache,
                 selectedTag: this.selectedTag,
-                onDateSelect: (date: moment.Moment) => {
+                onDateSelect: async (date: moment.Moment, openNote: boolean) => {
                     this.selectedDate = date;
                     this.selectedTag = null;
+                    if(openNote){
+                        await this.dailyNoteService.openOrCreateDailyNote(date);
+                    }
                     this.updateView();
                 },
                 onMonthChange: (date: moment.Moment) => {
@@ -79,10 +82,6 @@ export class InteractiveCalendarView extends ItemView {
                 },
                 onTagSelect: (tag: string | null) => {
                     this.selectedTag = tag;
-                    this.updateView();
-                },
-                onDayNumberClick: async (date: moment.Moment) => {
-                    await this.dailyNoteService.openOrCreateDailyNote(date);
                     this.updateView();
                 },
                 onPeriodResize: async (task, oldStart, oldEnd, newStart, newEnd) => {
