@@ -44,7 +44,11 @@ export class TaskCreateModal extends Modal {
     private submitTask() {
         this.isSubmitted = true;
         if(this.task.level === 0){
-            this.task.tag = `task/${this.task.text.trim().replace(/\s+/g, "_")}`
+            const targetDate = this.task.startDate || this.task.date;
+            const dateSuffix = targetDate.format("YYYYMMDD");
+
+            const clenarText = this.task.text.trim().replace(/\s+/g, "_");
+            this.task.tag = `task/${clenarText}_${dateSuffix}`;
         } else {
             this.task.tag = undefined;
         }
