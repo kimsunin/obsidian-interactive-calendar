@@ -1,10 +1,10 @@
 import { App, Modal, Setting } from "obsidian";
-import { Task } from "src/types";
+import { Task, RootTask } from "src/types";
 
 export class TaskCreateModal extends Modal {
     private isSubmitted: boolean = false;
 
-    constructor(app: App, private task: Task, private onSubmit: (task: Task | null) => void){
+    constructor(app: App, private task: RootTask, private onSubmit: (task: RootTask | null) => void){
         super(app);
     }
 
@@ -43,15 +43,11 @@ export class TaskCreateModal extends Modal {
 
     private submitTask() {
         this.isSubmitted = true;
-        if(this.task.level === 0){
-            const targetDate = this.task.startDate || this.task.date;
-            const dateSuffix = targetDate.format("YYYYMMDD");
+        const targetDate = this.task.startDate || this.task.date;
+        const dateSuffix = targetDate.format("YYYYMMDD");
 
-            const clenarText = this.task.text.trim().replace(/\s+/g, "_");
-            this.task.tag = `task/${clenarText}_${dateSuffix}`;
-        } else {
-            this.task.tag = undefined;
-        }
+        const clenarText = this.task.text.trim().replace(/\s+/g, "_");
+        this.task.tag = `task/${clenarText}_${dateSuffix}`;
         this.close();
         this.onSubmit(this.task);
     }

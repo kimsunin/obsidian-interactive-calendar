@@ -1,5 +1,5 @@
 import { App } from "obsidian";
-import { Task, TaskViewProps } from "src/types";
+import { Task, RootTask, TaskViewProps } from "src/types";
 
 
 export class TaskView {
@@ -82,7 +82,7 @@ export class TaskView {
     }
 
     // 재귀적으로 일정 리스트 생성
-    private renderTaskNode(parentEl: HTMLElement, task: Task, props: TaskViewProps){
+    private renderTaskNode(parentEl: HTMLElement, task: Task | RootTask, props: TaskViewProps){
         if (task.level > 0) {
             if (!task.date || !props.selectedDate.isSame(task.date, "day")) {
                 return;
@@ -112,7 +112,7 @@ export class TaskView {
             text: task.text
         });
 
-        if(task.level === 0 && task.tag && props.selectedTag === null){
+        if(task.level === 0 && "tag" in task && props.selectedTag === null){
             itemContentEl.classList.add("is-clickable");
             
             // 마우스 호버 시 캘린더 기간 강조

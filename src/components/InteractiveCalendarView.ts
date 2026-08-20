@@ -1,6 +1,6 @@
 import {ItemView, WorkspaceLeaf, moment } from "obsidian";
 import { CalendarView } from "./CalendarView";
-import { CalendarSettings, Task } from "src/types";
+import { CalendarSettings, Task, RootTask } from "src/types";
 import { DailyNoteService } from "src/services/DailyNoteService";
 import { TaskView } from "./TaskView";
 import { VIEW_TYPE_INTERACTIVE_CALENDAR } from "src/types";
@@ -19,7 +19,7 @@ export class InteractiveCalendarView extends ItemView {
     private selectedTag: string | null = null;
 
     // 월별 task 캐시
-    private monthTaskCache = new Map<string, Task[] >();
+    private monthTaskCache = new Map<string, RootTask[] >();
 
     constructor(leaf: WorkspaceLeaf, settings: CalendarSettings){
         super(leaf);
@@ -88,7 +88,7 @@ export class InteractiveCalendarView extends ItemView {
                     this.updateView();  
                     await this.dailyNoteService.updateTaskPeriod(task, oldStart, oldEnd, newStart, newEnd);
                 },
-                onCreateTask: async (task: Task | null) =>{
+                onCreateTask: async (task: RootTask | null) =>{
                     if(task){
                         const startMonth = task.startDate!.clone().startOf("month");
                         const endMonth = task.endDate!.clone().startOf("month");
@@ -110,7 +110,7 @@ export class InteractiveCalendarView extends ItemView {
                         const filePromises: Promise<void>[] = [];
                         const curr = task.startDate!.clone();
                         while(curr.isSameOrBefore(task.endDate, "day")){
-                            const dayTask: Task = {
+                            const dayTask: RootTask = {
                                 ...task,
                                 date: curr.clone()
                             };
@@ -140,9 +140,9 @@ export class InteractiveCalendarView extends ItemView {
                     this.selectedTag = tag;
                     this.updateView();
                 },
-                onTaskHover: (task: Task, isEnter: boolean) => {
+                onTaskHover: (task: RootTask, isEnter: boolean) => {
                     if(this.calendarView){
-                        if(isEnter && task.startDate && task.endDate){
+                        if(isEnter){
                             this.calendarView.highlightPeriod(task.startDate, task.endDate, "period-highlighted");
                         } else {
                             this.calendarView.clearHighlight("period-highlighted");

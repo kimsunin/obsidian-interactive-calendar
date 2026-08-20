@@ -1,5 +1,5 @@
 import { App, setIcon, moment } from "obsidian";
-import { CalendarViewProps, Task  } from "src/types"
+import { CalendarViewProps, Task, RootTask  } from "src/types"
 import { TaskCreateModal } from "src/components/TaskCreateModal";
 
 
@@ -13,7 +13,7 @@ export class CalendarView {
     private dragEdge: "start" | "end" | null = null;
     private dragStart: moment.Moment | null = null;
     private dragEnd: moment.Moment | null = null;
-    private activeTask: Task | null = null;
+    private activeTask: RootTask | null = null;
     private oldStart: moment.Moment | null = null;
     private oldEnd: moment.Moment | null = null;
     private currentProps: CalendarViewProps | null = null;
@@ -211,7 +211,7 @@ export class CalendarView {
             });
 
             // 상위 일정 기간 변경 이벤트
-            let targetTask: Task | undefined;
+            let targetTask: RootTask | undefined;
             if(props.selectedTag){
                 for (const tasks of props.tasksMap.values()){
                     targetTask = tasks.find(t => t.level === 0 && t.tag === props.selectedTag);
@@ -223,7 +223,7 @@ export class CalendarView {
                 if((e.target as HTMLElement).closest(".task-dot") || (e.target as HTMLElement).closest(".day-number")) return;
 
                 // 기존 일정 기간 변경
-                if(targetTask && targetTask.startDate && targetTask.endDate && (dayDate.isSame(targetTask.startDate, "day") || dayDate.isSame(targetTask.endDate, "day"))){
+                if(targetTask && (dayDate.isSame(targetTask.startDate, "day") || dayDate.isSame(targetTask.endDate, "day"))){
                     e.stopPropagation();
                     this.isDragging = true;
                     this.dragMode = "resize";
@@ -289,12 +289,12 @@ export class CalendarView {
 
         // 선택된 일정 기간 활성화
         if (props.selectedTag){
-            let selectedTask: Task | undefined;
+            let selectedTask: RootTask | undefined;
             for (const tasks of props.tasksMap.values()){
                 selectedTask = tasks.find(tasks => tasks.level === 0 && tasks.tag === props.selectedTag);
                 if(selectedTask) break;
             }
-            if(selectedTask && selectedTask.startDate && selectedTask.endDate){
+            if(selectedTask){
                 this.highlightPeriod(selectedTask.startDate, selectedTask.endDate, "period-highlighted-clicked")
                 
             }
@@ -334,7 +334,7 @@ export class CalendarView {
                 this.dragStart = null;
                 this.dragEnd = null;
 
-                const tempTask: Task = {
+                const tempTask: RootTask = {
                     id: `temp-${s.format("YYYY-MM-DD")}-${Math.random().toString(36).substring(2, 9)}`,
                     text: "",
                     date: s.clone(),
@@ -345,7 +345,7 @@ export class CalendarView {
                     children: [],
                     filePath: "",
                     lineNumber: 0,
-                    rawText: ""
+                    tag: ""
                 };
 
                 if (this.currentProps.onCreateTask) {

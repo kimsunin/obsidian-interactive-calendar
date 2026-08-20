@@ -6,7 +6,7 @@ import {
     createDailyNote
 } from "obsidian-daily-notes-interface";
 import { TaskParser } from "./TaskParser";
-import { Task, CalendarSettings } from "src/types";
+import { Task, RootTask, CalendarSettings } from "src/types";
 
 export class DailyNoteService {
     private app: App;
@@ -20,9 +20,9 @@ export class DailyNoteService {
     }
 
     // 모든 데일리 노트를 읽고 파싱한 후, 월별로 그룹화하여 일정 반환(병렬처리)
-    public async getAllTasks(): Promise<Map<string, Task[]>> {
+    public async getAllTasks(): Promise<Map<string, RootTask[]>> {
         const dailyNotes: Record<string, TFile> = getAllDailyNotes();
-        const tagMap = new Map<string, Task>();
+        const tagMap = new Map<string, RootTask>(); // tag : rootTask
         const header = this.settings.useSectionHeader ? this.settings.todoSectionHeader : undefined;
 
         // 병렬처리로 노트를 읽어서 파싱
@@ -31,7 +31,7 @@ export class DailyNoteService {
             if(!noteDate) return null;
 
             const content = await this.app.vault.read(file);
-            const tasks = this.taskParser.parse(content, file.path, header);
+            const tasks = this.taskParser.parse(content, file.path, noteDate, header);
             return { noteDate, tasks };
         });
 
@@ -66,7 +66,7 @@ export class DailyNoteService {
         }
 
         // 원별 그룹화
-        const monthMap = new Map<string, Task[]>();
+        const monthMap = new Map<string, RootTask[]>(); // month : rootTask[]
         for(const task of tagMap.values()){
             if(!task.startDate || !task.endDate) continue;
 
@@ -104,9 +104,9 @@ export class DailyNoteService {
     }
 
     // 일정 상태변경, 상위 일정인 경우 모든 기간 변경, 하위 일정인 경우 해당 날짜만 변경(병렬처리)
-    public async toggleTaskState(task: Task): Promise<void> {
+    public async toggleTaskState(task: Task | RootTask): Promise<void> {
         // 상위 일정 -> 기간 내에 속한 모든 데일리 노트에 반영
-        if(task.level ===0 && task.tag && task.startDate && task.endDate){
+        if(task.level ===0 && "tag" in task){
             const dailyNotes = getAllDailyNotes();
             const tagKeyword = `#${task.tag}`;
 
@@ -185,7 +185,7 @@ export class DailyNoteService {
     // }
 
     // 일정 추가(상위 일정 추가)
-    public async addTask(task: Task): Promise<void> {
+    public async addTask(task: Task | RootTask): Promise<void> {
         const targetDate = task.date || moment();
         
         const file = await this.getOrCreateDailyNote(targetDate);
@@ -238,21 +238,21 @@ export class DailyNoteService {
     }
 
     // 일정 삭제(상위 일정 제거)
-    public async removeTask(task: Task, targetDate?: moment.Moment): Promise<void> {
+    public async removeTask(task: Task | RootTask, targetDate?: moment.Moment): Promise<void> {
         const fileDate = targetDate || task.date || moment();
         const dailyNotes = getAllDailyNotes();
         const file = getDailyNote(fileDate, dailyNotes);
         if (!file) return;
 
         const content = await this.app.vault.read(file);
-        const tagKeyword = task.tag ? `#${task.tag}` : null;
+        const tagKeyword = "tag" in task ? `#${task.tag}` : null;
 
         if (tagKeyword && !content.includes(tagKeyword)) return;
 
         const lines = content.split("\n");
-        const parsedTasks = this.taskParser.parse(content, file.path);
+        const parsedTasks = this.taskParser.parse(content, file.path, fileDate);
 
-        const targetRootTask = tagKeyword ? parsedTasks.find(t => t.level === 0 && t.tag === task.tag)
+        const targetRootTask = (tagKeyword && "tag" in task) ? parsedTasks.find(t => t.level === 0 && t.tag === task.tag)
                 : parsedTasks.find(t => t.lineNumber === task.lineNumber);
 
         if(targetRootTask){
@@ -268,13 +268,13 @@ export class DailyNoteService {
 
     // 기간 일정 수정, 일정이 줄어든 경우 삭제, 일정이 길어진 경우 추가(병렬처리)
     public async updateTaskPeriod(
-        task: Task,
+        task: Task | RootTask,
         oldStart: moment.Moment,
         oldEnd: moment.Moment,
         newStart: moment.Moment,
         newEnd: moment.Moment
     ): Promise<void>{
-        if(!task.tag) return;
+        if(!("tag" in task)) return;
 
         if(oldStart.isSame(newStart, "day") && oldEnd.isSame(newEnd, "day")) return;
 

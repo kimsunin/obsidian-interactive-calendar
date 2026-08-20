@@ -1,13 +1,14 @@
 import { moment } from "obsidian";
-import { Task } from "../types";
+import { Task, RootTask } from "../types";
 
 // task 문자열 <-> task 객체 변환 서비스
 export class TaskParser {
     // task 문자열 -> task 객체
-    public parse(markdown: string, filePath: string, targetHeader?: string): Task[] {
+    public parse(markdown: string, filePath: string, currentDate: moment.Moment, targetHeader?: string): RootTask[] {
         const lines = markdown.split("\n");
-        const rootTasks: Task[] = []; // 최상위 task
+        const rootTasks: RootTask[] = []; // 최상위 task
         const stack: Task[] = []; // 서브 task
+        let activeRootTask: RootTask | null = null;
 
         // - [ ] 또는 - [x]
         const taskRegex = /^(\s*)[-*+]\s+\[([ xX])\]\s*(.*)$/;
@@ -70,46 +71,58 @@ export class TaskParser {
             }
             if(isSkipMode) continue;
 
-            const task: Task = {
-                id: `${filePath}:${i}`,
-                text: text,
-                date: moment() as moment.Moment,
-                completed: isCompleted,
-                level: level,
-                children: [],
-                filePath: filePath,
-                lineNumber: i + 1,
-                rawText: line
-            };
-
-            if(tag){
-                task.tag = tag;
-            }
-
-            while(stack.length > 0 && stack[stack.length - 1].level >= level){
-                stack.pop();
-            }
-
-            if(stack.length === 0){
-                rootTasks.push(task);
+            if(level === 0 && tag){
+                const rootTask: RootTask = {
+                    id: `${filePath}:${i}`,
+                    text: text,
+                    date: currentDate.clone(),
+                    completed: isCompleted,
+                    level: level,
+                    children: [],
+                    filePath: filePath,
+                    lineNumber: i + 1,
+                    startDate: currentDate.clone(),
+                    endDate: currentDate.clone(),
+                    tag: tag
+                }
+                rootTasks.push(rootTask);
+                activeRootTask = rootTask;
+                stack.length = 0;
             } else {
-                const parent = stack[stack.length - 1];
-                parent.children.push(task);
+                const subTask: Task = {
+                    id: `${filePath}:${i}`,
+                    text: text,
+                    date: currentDate.clone(),
+                    completed: isCompleted,
+                    level: level,
+                    children: [],
+                    filePath: filePath,
+                    lineNumber: i + 1
+                }
+                while (stack.length > 0 && stack[stack.length - 1].level >= level){
+                    stack.pop();
+                }
+                if(stack.length === 0){
+                    if(activeRootTask){
+                        activeRootTask.children.push(subTask);
+                    }
+                } else {
+                    const parent = stack[stack.length - 1];
+                    parent.children.push(subTask);
+                }
+                stack.push(subTask);
             }
-
-            stack.push(task);
         }
-
         return rootTasks;
     }
 
     // task 객체 -> task 문자열
-    public stringify(task: Task, targetDate?: moment.Moment): string {
+    public stringify(task: Task | RootTask, targetDate?: moment.Moment): string {
         const indent = "\t".repeat(task.level);
         const checkbox = task.completed ? "[x]" : "[ ]";
 
         let textWithTag = task.text;
-        if(task.level === 0 && task.tag){
+        if(task.level === 0 && "tag" in task){
             textWithTag = `${task.text} #${task.tag}`
         }
 

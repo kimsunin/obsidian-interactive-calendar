@@ -4,7 +4,7 @@ import { moment } from "obsidian"
 export interface CalendarViewProps {
     selectedDate: moment.Moment;
     currentMonth: moment.Moment;
-    tasksMap: Map<string, Task[]>;
+    tasksMap: Map<string, RootTask[]>;
     selectedTag: string| null;
     onDateSelect: (date: moment.Moment, openNote: boolean) => Promise<void> | void;
     onMonthChange: (date: moment.Moment) => void;
@@ -16,7 +16,7 @@ export interface CalendarViewProps {
         newStart: moment.Moment,
         newEnd: moment.Moment
     ) => Promise<void> | void;
-    onCreateTask: (task: Task | null) => Promise<void> | void;
+    onCreateTask: (task: RootTask | null) => Promise<void> | void;
     onRefresh: () => Promise<void> | void;
 }
 
@@ -24,10 +24,10 @@ export interface CalendarViewProps {
 export interface TaskViewProps {
     selectedDate: moment.Moment;
     selectedTag: string | null;
-    tasksMap: Map<string, Task[]>;
+    tasksMap: Map<string, RootTask[]>;
     onTaskToggle: (task: Task) => Promise<void> | void; // 체크박스 토글 콜백
     onTagSelect: (tag: string | null) => void;
-    onTaskHover: (task: Task, isEnter: boolean) => void;
+    onTaskHover: (task: RootTask, isEnter: boolean) => void;
 }
 
 // task 데이터
@@ -35,22 +35,16 @@ export interface Task {
     id: string;
     text: string;
     date: moment.Moment;
-
     completed: boolean;
     level: number;
-
-    // 최상위 task를 위한 기간 정보
-    startDate?: moment.Moment;
-    endDate?: moment.Moment;
-    tag?: string;
-
-    // 하위 task
     children: Task[];
-
-    // 파일 정보
     filePath: string;
     lineNumber: number;
-    rawText: string;
+}
+export interface RootTask extends Task {
+    startDate: moment.Moment;
+    endDate: moment.Moment;
+    tag: string;
 }
 
 export const VIEW_TYPE_INTERACTIVE_CALENDAR = "interactive-calendar-view";
