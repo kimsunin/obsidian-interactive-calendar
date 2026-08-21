@@ -10,7 +10,7 @@ export interface CalendarViewProps {
     onMonthChange: (date: moment.Moment) => void;
     onTagSelect: (tag: string | null) => void;
     onPeriodResize: (
-        task: Task,
+        task: RootTask,
         oldStart: moment.Moment,
         oldEnd: moment.Moment,
         newStart: moment.Moment,

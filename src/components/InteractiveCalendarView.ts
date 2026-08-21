@@ -1,9 +1,10 @@
 import {ItemView, WorkspaceLeaf, moment } from "obsidian";
 import { CalendarView } from "./CalendarView";
 import { CalendarSettings, Task, RootTask } from "src/types";
-import { DailyNoteService } from "src/services/DailyNoteService";
 import { TaskView } from "./TaskView";
 import { VIEW_TYPE_INTERACTIVE_CALENDAR } from "src/types";
+import { NoteService } from "src/services/NoteService";
+import { TaskService } from "src/services/TaskService";
 
 export class InteractiveCalendarView extends ItemView {
     private calendarView: CalendarView | null = null;
@@ -11,7 +12,8 @@ export class InteractiveCalendarView extends ItemView {
     private topSection: HTMLDivElement | null = null;
     private bottomSection: HTMLDivElement | null = null;
 
-    private dailyNoteService: DailyNoteService
+    private taskService: TaskService
+    private noteService: NoteService
 
     // 날짜 상태 관리
     private selectedDate: moment.Moment = moment() as moment.Moment;
@@ -23,7 +25,8 @@ export class InteractiveCalendarView extends ItemView {
 
     constructor(leaf: WorkspaceLeaf, settings: CalendarSettings){
         super(leaf);
-        this.dailyNoteService = new DailyNoteService(this.app, settings);
+        this.noteService = new NoteService(this.app);
+        this.taskService = new TaskService(this.noteService, settings);
     }
 
     getViewType(): string {
@@ -56,7 +59,7 @@ export class InteractiveCalendarView extends ItemView {
     }    
 
     private async refreshAllNotes(): Promise<void> {
-        this.monthTaskCache = await this.dailyNoteService.getAllTasks();
+        this.monthTaskCache = await this.taskService.getAllTasks();
         this.updateView();
     }
 
@@ -72,7 +75,8 @@ export class InteractiveCalendarView extends ItemView {
                     this.selectedDate = date;
                     this.selectedTag = null;
                     if(openNote){
-                        await this.dailyNoteService.openOrCreateDailyNote(date);
+                        const file = await this.noteService.getOrCreateNoteFile(date);
+                        await this.noteService.openNote(file);
                     }
                     this.updateView();
                 },
@@ -86,7 +90,7 @@ export class InteractiveCalendarView extends ItemView {
                 },
                 onPeriodResize: async (task, oldStart, oldEnd, newStart, newEnd) => {
                     this.updateView();  
-                    await this.dailyNoteService.updateTaskPeriod(task, oldStart, oldEnd, newStart, newEnd);
+                    await this.taskService.updateTaskPeriod(task, oldStart, oldEnd, newStart, newEnd);
                 },
                 onCreateTask: async (task: RootTask | null) =>{
                     if(task){
@@ -114,7 +118,7 @@ export class InteractiveCalendarView extends ItemView {
                                 ...task,
                                 date: curr.clone()
                             };
-                            filePromises.push(this.dailyNoteService.addTask(dayTask));
+                            filePromises.push(this.taskService.addTask(dayTask));
                             curr.add(1, "day");
                         }
                         await Promise.all(filePromises);
@@ -134,7 +138,7 @@ export class InteractiveCalendarView extends ItemView {
                 tasksMap: this.monthTaskCache,   
                 onTaskToggle: async (task: Task) => {
                     this.updateView();
-                    await this.dailyNoteService.toggleTaskState(task);
+                    await this.taskService.toggleTask(task);
                 },
                 onTagSelect: (tag: string | null) => {
                     this.selectedTag = tag;
