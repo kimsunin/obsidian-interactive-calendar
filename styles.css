@@ -52,10 +52,16 @@
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 0.85em;
     padding: 4px 6px;
     border-radius: 4px;
     transition: color 0.15s ease;
+}
+.calendar-header-controls-prev,
+.calendar-header-controls-next {
+    font-size: 14px;
+}
+.calendar-header-controls-today {
+    font-size: 0.7em;
 }
 
 .calendar-header-controls-prev:hover,
@@ -67,11 +73,9 @@
     color: var(--text-normal);
 }
 
-.calendar-header-controls-prev svg,
-.calendar-header-controls-next svg,
 .calendar-header-controls-refresh svg {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     stroke-width: 2.2px;
 }
 
