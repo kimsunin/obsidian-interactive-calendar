@@ -1,4 +1,4 @@
-import {ItemView, WorkspaceLeaf, moment } from "obsidian";
+import {ItemView, WorkspaceLeaf, moment, Notice } from "obsidian";
 import { CalendarView } from "./CalendarView";
 import { CalendarSettings, Task, RootTask } from "src/types";
 import { TaskView } from "./TaskView";
@@ -176,6 +176,9 @@ export class InteractiveCalendarView extends ItemView {
                             const monthTasks = this.monthTaskCache.get(key) || [];
                             if(!monthTasks.some(t => t.tag === task.tag)){
                                 monthTasks.push(task);
+                            } else {
+                                new Notice("task already exist.");
+                                return;
                             }
                             this.monthTaskCache.set(key, monthTasks);
                             mCurr.add(1, "month");
