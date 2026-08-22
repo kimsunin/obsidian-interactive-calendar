@@ -1,6 +1,7 @@
 import { App, Modal, Setting } from "obsidian";
 import { Task, RootTask } from "src/types";
 
+// task 생성 후 task 객체 반환
 export class TaskCreateModal extends Modal {
     private isSubmitted: boolean = false;
 

@@ -1,7 +1,7 @@
 import { App } from "obsidian";
 import { Task, RootTask, TaskViewProps } from "src/types";
 
-
+// task 렌더링 및 toggle, checkbox 이벤트 처리
 export class TaskView {
     private headerEl!: HTMLElement;
     private listContainerEl!: HTMLElement;

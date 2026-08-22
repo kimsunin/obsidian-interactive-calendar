@@ -225,57 +225,6 @@ export class TaskService{
         }
     }
 
-    // 상위 일정 기간 변경 (제외된 날짜는 removeTask, 추가된 날짜는 addTask)
-    public async updateTaskPeriod(
-        task: RootTask,
-        oldStart: moment.Moment,
-        oldEnd: moment.Moment,
-        newStart: moment.Moment,
-        newEnd: moment.Moment
-    ): Promise<void> {
-        if (oldStart.isSame(newStart, "day") && oldEnd.isSame(newEnd,
-            "day")) return;
-
-        const oldDates = new Set<string>();
-        const currOld = oldStart.clone();
-        while (currOld.isSameOrBefore(oldEnd, "day")) {
-            oldDates.add(currOld.format("YYYY-MM-DD"));
-            currOld.add(1, "day");
-        }
-
-        const newDates = new Set<string>();
-        const currNew = newStart.clone();
-        while (currNew.isSameOrBefore(newEnd, "day")) {
-            newDates.add(currNew.format("YYYY-MM-DD"));
-            currNew.add(1, "day");
-        }
-
-        const taskPromises: Promise<void>[] = [];
-
-        // 삭제
-        for (const dateStr of oldDates) {
-            if (!newDates.has(dateStr)) {
-                const removedDate = moment(dateStr, "YYYY-MM-DD") as moment.Moment;
-                taskPromises.push(this.removeTask(task, removedDate));
-            }
-        }
-
-        // 추가
-        for (const dateStr of newDates) {
-            if (!oldDates.has(dateStr)) {
-                const addedDate = moment(dateStr, "YYYY-MM-DD") as moment.Moment;
-                const tempTask: RootTask = {
-                    ...task,
-                    date: addedDate.clone(),
-                    level: 0
-                };
-                taskPromises.push(this.addTask(tempTask));
-            }
-        }
-
-        await Promise.all(taskPromises);
-    }
-
     // 일정 업데이트(하위 일정 추가, 제거)
     // public async updateTask(task: RootTask): Promise<void> {
     //     const fileDate = task.date;

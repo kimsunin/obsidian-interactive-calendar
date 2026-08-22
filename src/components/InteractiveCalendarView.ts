@@ -6,6 +6,7 @@ import { VIEW_TYPE_INTERACTIVE_CALENDAR } from "src/types";
 import { NoteService } from "src/services/NoteService";
 import { TaskService } from "src/services/TaskService";
 
+// task 캐시 관리, CalendarView, TaskView 렌더링
 export class InteractiveCalendarView extends ItemView {
     private calendarView: CalendarView | null = null;
     private taskView: TaskView | null = null;
@@ -88,9 +89,78 @@ export class InteractiveCalendarView extends ItemView {
                     this.selectedTag = tag;
                     this.updateView();
                 },
-                onPeriodResize: async (task, oldStart, oldEnd, newStart, newEnd) => {
-                    this.updateView();  
-                    await this.taskService.updateTaskPeriod(task, oldStart, oldEnd, newStart, newEnd);
+                onPeriodResize: async (task, newStart, newEnd) => {
+                    const oldStart = task.startDate.clone();
+                    const oldEnd = task.endDate.clone();
+
+                    const oldStartMonth = oldStart.clone().startOf("month");
+                    const oldEndMonth = oldEnd.clone().startOf("month");
+                    let curr = oldStartMonth.clone();
+                    while(curr.isSameOrBefore(oldEndMonth, "month")){
+                        const key = curr.format("YYYY-MM");
+                        const monthTasks = this.monthTaskCache.get(key) || [];
+                        this.monthTaskCache.set(key, monthTasks.filter(t => t.tag !== task.tag));
+                        curr.add(1, "month");
+                    }
+
+                    task.startDate = newStart.clone();
+                    task.endDate = newEnd.clone();
+
+                    const newStartMonth = newStart.clone().startOf("month");
+                    const newEndMonth = newEnd.clone().startOf("month");
+                    curr = newStartMonth.clone();
+
+                    while(curr.isSameOrBefore(newEndMonth, "month")){
+                        const key = curr.format("YYYY-MM");
+                        const monthTasks = this.monthTaskCache.get(key) || [];
+                        if(!monthTasks.some(t => t.tag === task.tag)){
+                            monthTasks.push(task);
+                        }
+                        this.monthTaskCache.set(key, monthTasks);
+                        curr.add(1, "month");
+                    }                    
+
+                    this.updateView();
+
+                    const oldDates = new Set<string>();
+                    const currOld = oldStart.clone();
+                    while (currOld.isSameOrBefore(oldEnd, "day")) {
+                        oldDates.add(currOld.format("YYYY-MM-DD"));
+                        currOld.add(1, "day");
+                    }
+
+    			    const newDates = new Set<string>();
+    			    const currNew = newStart.clone();
+    			    while (currNew.isSameOrBefore(newEnd, "day")) {
+    			        newDates.add(currNew.format("YYYY-MM-DD"));
+                        currNew.add(1, "day");
+        		    }
+
+    			    const filePromises: Promise<void>[] = [];
+
+    			    // 삭제
+    			    for (const dateStr of oldDates) {
+    			        if (!newDates.has(dateStr)) {
+                                const removedDate = moment(dateStr, "YYYY-MM-DD") as moment.Moment;
+    				        filePromises.push(this.taskService.removeTask(task, removedDate));
+                        }
+        		    }
+
+    			    // 추가
+    			    for (const dateStr of newDates) {
+    			        if (!oldDates.has(dateStr)) {
+                            const addedDate = moment(dateStr, "YYYY-MM-DD") as moment.Moment;
+    				        const tempTask: RootTask = {
+    				            ...task,
+                                date: addedDate.clone(),
+                                level: 0
+    				        };
+    				        filePromises.push(this.taskService.addTask(tempTask));
+                        }
+                    }
+
+    			    // 병렬처리
+    			    await Promise.all(filePromises);
                 },
                 onCreateTask: async (task: RootTask | null) =>{
                     if(task){
@@ -101,13 +171,14 @@ export class InteractiveCalendarView extends ItemView {
                         while(mCurr.isSameOrBefore(endMonth, "month")){
                             const key = mCurr.format("YYYY-MM");
                             const monthTasks = this.monthTaskCache.get(key) || [];
-                            if(!monthTasks.some(t => t.tag === task.tag || t.id === task.id)){
+                            if(!monthTasks.some(t => t.tag === task.tag)){
                                 monthTasks.push(task);
                             }
                             this.monthTaskCache.set(key, monthTasks);
                             mCurr.add(1, "month");
                         }
                         this.selectedTag = task.tag || null;
+                        this.selectedDate = task.date;
 
                         this.updateView();
 

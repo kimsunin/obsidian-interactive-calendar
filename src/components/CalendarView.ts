@@ -2,7 +2,7 @@ import { App, setIcon, moment } from "obsidian";
 import { CalendarViewProps, Task, RootTask  } from "src/types"
 import { TaskCreateModal } from "src/components/TaskCreateModal";
 
-
+// 캘린더 ui, 일정 생성/변경 이벤트 처리
 export class CalendarView {
     private headerEl!: HTMLElement;
     private gridEl!: HTMLElement;
@@ -14,13 +14,12 @@ export class CalendarView {
     private dragStart: moment.Moment | null = null;
     private dragEnd: moment.Moment | null = null;
     private activeTask: RootTask | null = null;
-    private oldStart: moment.Moment | null = null;
-    private oldEnd: moment.Moment | null = null;
     private currentProps: CalendarViewProps | null = null;
 
     
     constructor(private containerEl: HTMLElement, private app: App){
         this.initLayout();
+        this.initEvent();
     }
 
     // 캘린더 초기화
@@ -39,6 +38,61 @@ export class CalendarView {
 
         // 날짜 그리드
         this.gridEl = this.containerEl.createDiv({ cls: "calendar-view-grid"});
+    }
+
+    private initEvent(){
+        // 마우스 떼는 순간 일정 기간 변경 이벤트
+        window.addEventListener("mouseup", () => {
+            if (!this.isDragging || !this.dragMode) return;
+
+            const mode = this.dragMode;
+            const resizedTask = this.activeTask;
+            const newStart = this.dragStart;
+            const newEnd = this.dragEnd;
+
+            this.isDragging = false;
+            this.dragMode = null;
+            this.dragStart = null;
+            this.dragEnd = null;
+            this.activeTask = null;
+            this.dragEdge = null;
+
+            if(mode === "resize" && resizedTask && this.currentProps){
+                if(newStart && newEnd && (!newStart.isSame(resizedTask.startDate, "day") || !newEnd.isSame(resizedTask.endDate, "day"))){
+                    if(this.currentProps.onPeriodResize){
+                        void this.currentProps.onPeriodResize(resizedTask, newStart, newEnd);
+                    }
+                } 
+            } else if(mode === "create" && newStart && newEnd && this.currentProps){
+                // 새로운 일정 생성 모달 호출
+                const s = newStart.isBefore(newEnd, "day") ? newStart.clone() : newEnd.clone();
+                const e = newStart.isBefore(newEnd, "day") ? newEnd.clone() : newStart.clone();
+
+                const tempTask: RootTask = {
+                    id: `temp-${s.format("YYYY-MM-DD")}-${Math.random().toString(36).substring(2, 9)}`,
+                    text: "",
+                    date: s.clone(),
+                    completed: false,
+                    level: 0,
+                    startDate: s,
+                    endDate: e,
+                    children: [],
+                    filePath: "",
+                    lineNumber: 0,
+                    tag: ""
+                }
+
+                if (this.currentProps.onCreateTask) {
+                    new TaskCreateModal(this.app, tempTask, (newTask) => {
+                        this.clearHighlight("period-highlighted-clicked")
+
+                        if (this.currentProps?.onCreateTask) {
+                            void this.currentProps.onCreateTask(newTask);
+                        } 
+                    }).open();
+                }
+            }
+        });
     }
 
     public render(props: CalendarViewProps){
@@ -114,6 +168,13 @@ export class CalendarView {
         const totalDays = 42;
         const currentDate = startDate.clone();
 
+        // 상위 일정 기간 변경 이벤트
+        if(props.selectedTag){
+            for (const tasks of props.tasksMap.values()){
+                this.activeTask = tasks.find(t => t.level === 0 && t.tag === props.selectedTag) || null;
+                if(this.activeTask) break;
+            }
+        }
         for (let i = 0; i < totalDays; i ++){
             const dayDate = currentDate.clone();
             const isCurrentMonth = dayDate.month() === props.currentMonth.month();
@@ -210,27 +271,18 @@ export class CalendarView {
                 }
             });
 
-            // 상위 일정 기간 변경 이벤트
-            let targetTask: RootTask | undefined;
-            if(props.selectedTag){
-                for (const tasks of props.tasksMap.values()){
-                    targetTask = tasks.find(t => t.level === 0 && t.tag === props.selectedTag);
-                    if(targetTask) break;
-                }
-            }
             dayCell.addEventListener("mousedown", (e) => {
                  // 숫자 클릭인지 검사
                 if((e.target as HTMLElement).closest(".task-dot") || (e.target as HTMLElement).closest(".day-number")) return;
 
                 // 기존 일정 기간 변경
-                if(targetTask && (dayDate.isSame(targetTask.startDate, "day") || dayDate.isSame(targetTask.endDate, "day"))){
+                if(this.activeTask && (dayDate.isSame(this.activeTask.startDate, "day") || dayDate.isSame(this.activeTask.endDate, "day"))){
                     e.stopPropagation();
                     this.isDragging = true;
                     this.dragMode = "resize";
-                    this.dragEdge = dayDate.isSame(targetTask.startDate, "day") ? "start" : "end";
-                    this.activeTask = targetTask;
-                    this.oldStart = targetTask.startDate.clone();
-                    this.oldEnd = targetTask.endDate.clone();
+                    this.dragEdge = dayDate.isSame(this.activeTask.startDate, "day") ? "start" : "end";
+                    this.dragStart = this.activeTask.startDate.clone();
+                    this.dragEnd = this.activeTask.endDate.clone();
                     return;
                 }
                 // 새로운 일정 기간 생성
@@ -248,31 +300,31 @@ export class CalendarView {
             dayCell.addEventListener("mouseenter", () => {
                 if(!this.isDragging || !this.dragMode) return;
 
-                if(this.dragMode === "resize" && targetTask && this.dragEdge){
+                if(this.dragMode === "resize" && this.activeTask && this.dragEdge){
                     // 기존 일정 기간 변경
                     let validDate = dayDate.clone();
                     if(this.dragEdge === "start"){
-                        if(validDate.isAfter(targetTask.endDate, "day")){
+                        if(validDate.isAfter(this.activeTask.endDate, "day")){
                             // 종료일보다 뒤로이동, 종료일 <-> 시작일 스왑
-                            targetTask.startDate = this.oldEnd!.clone();
-                            targetTask.endDate = validDate;
+                            this.dragStart = this.activeTask.endDate.clone();
+                            this.dragEnd = validDate;
                         } else {
-                            targetTask.startDate = validDate;
-                            targetTask.endDate = this.oldEnd!.clone();
+                            this.dragStart = validDate;
+                            this.dragEnd = this.activeTask.endDate.clone();
                         }
-                    } else if(this.dragEdge === "end" && targetTask.startDate){
-                        if(validDate.isBefore(targetTask.startDate, "day")){
+                    } else if(this.dragEdge === "end" && this.dragStart){
+                        if(validDate.isBefore(this.activeTask.startDate, "day")){
                             // 시작일보다 앞으로 이동, 시작일 <-> 종료일 스왑
-                            targetTask.endDate = this.oldStart!.clone();
-                            targetTask.startDate = validDate;
+                            this.dragEnd = this.activeTask.startDate.clone();
+                            this.dragStart = validDate;
                         } else {
-                            targetTask.endDate = validDate;
-                            targetTask.startDate = this.oldStart!.clone();
+                            this.dragEnd = validDate;
+                            this.dragStart = this.activeTask.startDate.clone();
                         }
                     }
                     this.clearHighlight("period-highlighted-clicked")
-                    if(targetTask.startDate && targetTask.endDate){
-                        this.highlightPeriod(targetTask.startDate, targetTask.endDate, "period-highlighted-clicked")
+                    if(this.dragStart && this.dragEnd){
+                        this.highlightPeriod(this.dragStart, this.dragEnd, "period-highlighted-clicked")
                     }
                 } else if (this.dragMode === "create" && this.dragStart) {
                     // 새로운 일정 기간 조절
@@ -299,73 +351,6 @@ export class CalendarView {
                 
             }
         }
-        
-        // 마우스 떼는 순간 일정 기간 변경 이벤트
-        window.addEventListener("mouseup", () => {
-            if (!this.isDragging || !this.dragMode) return;
-
-            const mode = this.dragMode;
-            this.isDragging = false;
-            this.dragMode = null;
-
-            if(mode === "resize" && this.activeTask && this.oldStart && this.oldEnd && this.currentProps){
-                // 기존 일정 기간 변경 확정
-                const newStart = this.activeTask.startDate;
-                const newEnd = this.activeTask.endDate;
-                const resizedTask = this.activeTask;
-                const origStart = this.oldStart;
-                const origEnd = this.oldEnd;
-
-                this.activeTask = null;
-                this.oldStart = null
-                this.oldEnd = null;
-
-                if(newStart && newEnd && (!newStart.isSame(origStart, "day") || !newEnd.isSame(origEnd, "day"))){
-                    if(this.currentProps.onPeriodResize){
-                        void this.currentProps.onPeriodResize(resizedTask, origStart, origEnd, newStart, newEnd);
-                    }
-                } 
-
-            } else if(mode === "create" && this.dragStart && this.dragEnd && this.currentProps){
-                // 새로운 일정 생성 모달 호출
-                const s = this.dragStart.isBefore(this.dragEnd, "day") ? this.dragStart.clone() : this.dragEnd.clone();
-                const e = this.dragStart.isBefore(this.dragEnd, "day") ? this.dragEnd.clone() : this.dragStart.clone();
-
-                this.dragStart = null;
-                this.dragEnd = null;
-
-                const tempTask: RootTask = {
-                    id: `temp-${s.format("YYYY-MM-DD")}-${Math.random().toString(36).substring(2, 9)}`,
-                    text: "",
-                    date: s.clone(),
-                    completed: false,
-                    level: 0,
-                    startDate: s,
-                    endDate: e,
-                    children: [],
-                    filePath: "",
-                    lineNumber: 0,
-                    tag: ""
-                };
-
-                if (this.currentProps.onCreateTask) {
-                    new TaskCreateModal(this.app, tempTask, (newTask) => {
-                        this.clearHighlight("period-highlighted-clicked")
-
-                        if (this.currentProps?.onCreateTask) {
-                            void this.currentProps.onCreateTask(newTask);
-                        } 
-                    }).open();
-                }
-            } else {
-                    this.dragEdge = null;
-                    this.activeTask = null;
-                    this.oldStart = null;
-                    this.oldEnd = null;
-                    this.dragStart = null;
-                    this.dragEnd = null;
-    		}
-        });
     }
         
 

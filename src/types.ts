@@ -11,8 +11,6 @@ export interface CalendarViewProps {
     onTagSelect: (tag: string | null) => void;
     onPeriodResize: (
         task: RootTask,
-        oldStart: moment.Moment,
-        oldEnd: moment.Moment,
         newStart: moment.Moment,
         newEnd: moment.Moment
     ) => Promise<void> | void;
