@@ -61,6 +61,9 @@ export class InteractiveCalendarView extends ItemView {
 
     private async refreshAllNotes(): Promise<void> {
         this.monthTaskCache = await this.taskService.getAllTasks();
+        this.selectedDate = moment();
+        this.currentMonth = moment().startOf("month");
+        this.selectedTag = null;
         this.updateView();
     }
 
